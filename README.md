@@ -271,6 +271,20 @@ Demo proof: [docs/demo-proof.md](docs/demo-proof.md)
 Evidence guide: [docs/evidence.md](docs/evidence.md)  
 Cost control guide: [docs/cost-control.md](docs/cost-control.md)
 
+## AWS Demo Proof
+
+The project was deployed to Amazon EKS for a short-lived proof run, validated through the live ALB endpoint, HPA scale-out under k6 load, and same-day Terraform destroy.
+
+| Live dashboard | HPA scale-out |
+|---|---|
+| ![Live CloudOps dashboard on ALB](docs/screenshots/aws-demo-2026-06-06/01-live-dashboard-alb.png) | ![Backend HPA scale-out during k6 load](docs/screenshots/aws-demo-2026-06-06/10-hpa-during-load.png) |
+
+| EKS nodes | Destroy confirmation |
+|---|---|
+| ![EKS cluster and worker nodes](docs/screenshots/aws-demo-2026-06-06/07-eks-cluster-nodes.png) | ![Terraform destroy confirmation](docs/screenshots/aws-demo-2026-06-06/14-terraform-destroy-confirmation.png) |
+
+Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots/aws-demo-2026-06-06/)
+
 ## Documentation
 
 - [Architecture](docs/architecture.md)
