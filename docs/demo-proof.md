@@ -1,6 +1,6 @@
 # AWS Demo Proof
 
-This page records evidence from the short-lived AWS demo deployment of CloudOps SRE Platform. Screenshot evidence is stored in `docs/screenshots/` when captured during demo runs.
+This page records evidence from the short-lived AWS demo deployment of CloudOps SRE Platform. Screenshot evidence is stored in [docs/screenshots/aws-demo-2026-06-06](screenshots/aws-demo-2026-06-06/).
 
 ## Demo Run Summary
 
@@ -8,14 +8,14 @@ This page records evidence from the short-lived AWS demo deployment of CloudOps 
 - AWS region: `us-east-1`
 - Deployment model: short-lived Terraform apply, EKS deploy, HPA load test, same-day destroy
 - Result: application deployed successfully on Amazon EKS behind an AWS Application Load Balancer
-- Cleanup: Terraform destroy completed and post-destroy checks confirmed cost-bearing resources were removed
+- Cleanup: Terraform destroy completed with `49 destroyed`, and post-destroy checks confirmed cost-bearing resources were removed
 
 ## Application Proof
 
 Temporary ALB endpoint observed during the demo:
 
 ```text
-k8s-cloudops-cloudops-30c69c9652-1264128751.us-east-1.elb.amazonaws.com
+k8s-cloudops-cloudops-30c69c9652-1428253688.us-east-1.elb.amazonaws.com
 ```
 
 Health endpoint response:
@@ -41,25 +41,32 @@ platform status: critical
 Baseline HPA state before load:
 
 ```text
-backend HPA: cpu 7% / 60%, replicas 2
+backend HPA: cpu 2% / 60%, replicas 2
 ```
 
 k6 load test summary:
 
 ```text
-HTTP requests: 946
-Failed requests: 0
-Checks: 100%
-p95 latency: 1.53s
-Max VUs reached: 24
+HTTP requests: 2,035
+Failed requests: 0.49%
+Checks: 99.50%
+p95 latency: 1.52s
+Max VUs reached: 34
 ```
 
 HPA state during load:
 
 ```text
-backend HPA: cpu 387% / 60%, replicas 6
+backend HPA: cpu 444% / 60%, replicas 6
 backend deployment: 6/6 available
 backend pods: 6 running and ready
+```
+
+HPA state after load stopped:
+
+```text
+backend HPA: cpu 2% / 60%, replicas 2
+backend deployment: 2/2 available
 ```
 
 ## Cleanup Proof
@@ -75,11 +82,13 @@ Post-destroy verification confirmed:
 - Application Load Balancer was not found
 - Project VPC was not found
 - Project Elastic IPs were not found
-- NAT Gateway was in deleted state only
+- Active NAT Gateway resources were not found
 
 ## Screenshot Gallery
 
-Store sanitized screenshots in `docs/screenshots/` using the naming guide in [docs/evidence.md](evidence.md).
+Screenshot gallery:
+
+- [AWS demo screenshots - June 6, 2026](screenshots/aws-demo-2026-06-06/)
 
 Recommended LinkedIn-ready images:
 
@@ -91,7 +100,7 @@ Recommended LinkedIn-ready images:
 - EKS cluster and nodes
 - `kubectl get pods,svc,ingress,hpa`
 - HPA scale-out during k6 load
-- CloudWatch logs
+- CloudWatch log groups
 - Terraform destroy confirmation
 
 Before committing screenshots, crop or blur sensitive account IDs, secrets, private endpoint details, personal data, and unnecessary browser chrome.

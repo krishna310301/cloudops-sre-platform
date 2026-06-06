@@ -8,6 +8,10 @@ Recommended folder pattern:
 docs/screenshots/aws-demo-YYYY-MM-DD/
 ```
 
+Available galleries:
+
+- [AWS demo screenshots - June 6, 2026](aws-demo-2026-06-06/)
+
 Suggested file names are documented in:
 
 ```text
