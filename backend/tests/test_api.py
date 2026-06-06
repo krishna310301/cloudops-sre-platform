@@ -1,7 +1,10 @@
 import os
+import sys
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 test_db = Path(f"/tmp/cloudops_sre_platform_test_{os.getpid()}.db")
 if test_db.exists():
