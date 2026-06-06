@@ -1,0 +1,20 @@
+{{- if .Values.tests.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "cloudops-sre-platform.fullname" . }}-test-connection"
+  labels:
+    {{- include "cloudops-sre-platform.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  restartPolicy: Never
+  containers:
+    - name: wget
+      image: "{{ .Values.tests.image.repository }}:{{ .Values.tests.image.tag }}"
+      command:
+        - wget
+      args:
+        - "-qO-"
+        - "http://{{ include "cloudops-sre-platform.frontendServiceName" . }}:{{ .Values.frontend.service.port }}/"
+{{- end }}

@@ -1,0 +1,108 @@
+global:
+  imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+backend:
+  replicaCount: 2
+
+  image:
+    repository: "REPLACE_WITH_ECR_BACKEND_REPOSITORY"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+
+  podAnnotations: {}
+
+  env:
+    appEnv: "production"
+    corsOrigins: "https://cloudops.example.com"
+
+  database:
+    # For AWS, create this Kubernetes secret from AWS Secrets Manager or enable an external secret workflow.
+    existingSecret: "cloudops-database"
+    secretKey: "database_url"
+    createSecret: false
+    databaseUrl: ""
+
+  service:
+    # The frontend Nginx image proxies /api to http://backend:8000, so keep this name unless nginx.conf is rebuilt.
+    name: "backend"
+    type: ClusterIP
+    port: 8000
+
+  probes:
+    path: /health
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 60
+
+frontend:
+  replicaCount: 2
+
+  image:
+    repository: "REPLACE_WITH_ECR_FRONTEND_REPOSITORY"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  podAnnotations: {}
+
+  service:
+    name: "frontend"
+    type: ClusterIP
+    port: 80
+
+  probes:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+ingress:
+  enabled: false
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+
+tests:
+  enabled: true
+  image:
+    repository: busybox
+    tag: "1.36"

@@ -1,0 +1,33 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "cloudops-sre-platform.fullname" . }}
+  labels:
+    {{- include "cloudops-sre-platform.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "cloudops-sre-platform.frontendServiceName" $ }}
+                port:
+                  number: {{ $.Values.frontend.service.port }}
+          {{- end }}
+      {{- if .host }}
+      host: {{ .host | quote }}
+      {{- end }}
+    {{- end }}
+{{- end }}

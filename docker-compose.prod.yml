@@ -1,0 +1,47 @@
+name: cloudops-sre-platform-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cloudops
+      POSTGRES_USER: cloudops
+      POSTGRES_PASSWORD: cloudops
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cloudops -d cloudops"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      APP_ENV: production-local
+      DATABASE_URL: postgresql+psycopg://cloudops:cloudops@db:5432/cloudops
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+      args:
+        VITE_API_BASE_URL: /api
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_prod_data:

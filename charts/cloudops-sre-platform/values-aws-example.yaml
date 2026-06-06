@@ -1,0 +1,46 @@
+# Copy this file to values-aws.yaml during the short AWS demo deployment.
+# Replace the ECR account/region/repository values after Terraform creates ECR.
+
+backend:
+  image:
+    repository: "123456789012.dkr.ecr.us-east-1.amazonaws.com/cloudops-sre-platform/backend"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  env:
+    appEnv: "aws-demo"
+    corsOrigins: "https://REPLACE_WITH_ALB_DNS_NAME"
+
+  database:
+    existingSecret: "cloudops-database"
+    secretKey: "database_url"
+    createSecret: false
+
+  serviceAccount:
+    annotations: {}
+
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 60
+
+frontend:
+  image:
+    repository: "123456789012.dkr.ecr.us-east-1.amazonaws.com/cloudops-sre-platform/frontend"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix

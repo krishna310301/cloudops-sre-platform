@@ -1,0 +1,24 @@
+CloudOps SRE Platform has been rendered.
+
+Frontend service:
+  {{ include "cloudops-sre-platform.frontendServiceName" . }}:{{ .Values.frontend.service.port }}
+
+Backend service:
+  {{ include "cloudops-sre-platform.backendServiceName" . }}:{{ .Values.backend.service.port }}
+
+Backend HPA:
+  {{- if .Values.backend.hpa.enabled }}
+  enabled, min={{ .Values.backend.hpa.minReplicas }}, max={{ .Values.backend.hpa.maxReplicas }}, target CPU={{ .Values.backend.hpa.targetCPUUtilizationPercentage }}%
+  {{- else }}
+  disabled
+  {{- end }}
+
+Ingress:
+  {{- if .Values.ingress.enabled }}
+  enabled with class {{ .Values.ingress.className }}
+  {{- else }}
+  disabled
+  {{- end }}
+
+Database secret:
+  {{ include "cloudops-sre-platform.databaseSecretName" . }} / key {{ .Values.backend.database.secretKey }}

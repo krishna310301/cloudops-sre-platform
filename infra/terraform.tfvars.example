@@ -1,0 +1,21 @@
+project_name = "cloudops-sre-platform"
+environment  = "demo"
+owner        = "krishna-koushik-thokala"
+aws_region   = "us-east-1"
+
+# Keep this as null unless you intentionally want to pin a supported EKS version.
+eks_cluster_version = null
+
+# Short-demo defaults. Do not leave these running overnight.
+enable_nat_gateway = true
+node_min_size      = 1
+node_desired_size  = 2
+node_max_size      = 4
+node_instance_types = [
+  "t3.medium"
+]
+
+db_instance_class             = "db.t4g.micro"
+db_allocated_storage_gb       = 20
+db_max_allocated_storage_gb   = 30
+cloudwatch_log_retention_days = 7

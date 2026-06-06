@@ -1,0 +1,294 @@
+name: CI CD
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "charts/**"
+      - "infra/**"
+      - "docker-compose*.yml"
+      - ".github/workflows/deploy.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "charts/**"
+      - "infra/**"
+      - "docker-compose*.yml"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+    inputs:
+      deploy_to_aws:
+        description: "Push images to ECR and deploy to EKS"
+        required: true
+        default: false
+        type: boolean
+      aws_region:
+        description: "AWS region"
+        required: true
+        default: "us-east-1"
+        type: string
+      eks_cluster_name:
+        description: "EKS cluster name from Terraform output"
+        required: false
+        default: "cloudops-sre-platform-demo"
+        type: string
+      image_tag:
+        description: "Image tag to publish and deploy"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_NAME: cloudops-sre-platform
+  BACKEND_ECR_REPOSITORY: cloudops-sre-platform/backend
+  FRONTEND_ECR_REPOSITORY: cloudops-sre-platform/frontend
+  HELM_RELEASE: cloudops
+  K8S_NAMESPACE: cloudops
+  CHART_PATH: charts/cloudops-sre-platform
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -q
+
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
+
+  docker-build:
+    name: Docker Image Build
+    runs-on: ubuntu-latest
+    needs:
+      - backend-tests
+      - frontend-build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t "${PROJECT_NAME}-backend:${GITHUB_SHA}" ./backend
+
+      - name: Build frontend production image
+        run: docker build --target production --build-arg VITE_API_BASE_URL=/api -t "${PROJECT_NAME}-frontend:${GITHUB_SHA}" ./frontend
+
+  helm-validate:
+    name: Helm Lint And Render
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.4
+
+      - name: Helm lint
+        run: helm lint "${CHART_PATH}" -f "${CHART_PATH}/values-aws-example.yaml"
+
+      - name: Helm render AWS example
+        run: helm template "${HELM_RELEASE}" "${CHART_PATH}" -f "${CHART_PATH}/values-aws-example.yaml" --namespace "${K8S_NAMESPACE}"
+
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Terraform init
+        run: terraform init -backend=false
+
+      - name: Terraform format check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform validate
+        run: terraform validate
+
+  publish-images:
+    name: Publish Images To ECR
+    runs-on: ubuntu-latest
+    needs:
+      - docker-build
+      - helm-validate
+      - terraform-validate
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_to_aws }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      backend_image: ${{ steps.images.outputs.backend_image }}
+      frontend_image: ${{ steps.images.outputs.frontend_image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: meta
+        run: |
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            echo "image_tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "image_tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push images
+        id: images
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+        run: |
+          BACKEND_IMAGE="${ECR_REGISTRY}/${BACKEND_ECR_REPOSITORY}:${IMAGE_TAG}"
+          FRONTEND_IMAGE="${ECR_REGISTRY}/${FRONTEND_ECR_REPOSITORY}:${IMAGE_TAG}"
+
+          docker build -t "${BACKEND_IMAGE}" ./backend
+          docker build --target production --build-arg VITE_API_BASE_URL=/api -t "${FRONTEND_IMAGE}" ./frontend
+
+          docker push "${BACKEND_IMAGE}"
+          docker push "${FRONTEND_IMAGE}"
+
+          echo "backend_image=${BACKEND_IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=${FRONTEND_IMAGE}" >> "$GITHUB_OUTPUT"
+
+  deploy-eks:
+    name: Deploy To EKS With Helm
+    runs-on: ubuntu-latest
+    needs:
+      - publish-images
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_to_aws }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region "${{ inputs.aws_region }}" --name "${{ inputs.eks_cluster_name }}"
+
+      - name: Create namespace
+        run: kubectl create namespace "${K8S_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Sync database secret from Secrets Manager
+        env:
+          SECRET_NAME: ${{ secrets.AWS_DATABASE_SECRET_NAME }}
+        run: |
+          SECRET_JSON="$(aws secretsmanager get-secret-value --secret-id "${SECRET_NAME}" --query SecretString --output text)"
+          DATABASE_URL="$(echo "${SECRET_JSON}" | jq -r '.database_url')"
+          kubectl create secret generic cloudops-database \
+            --namespace "${K8S_NAMESPACE}" \
+            --from-literal=database_url="${DATABASE_URL}" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Helm upgrade
+        env:
+          IMAGE_TAG: ${{ needs.publish-images.outputs.image_tag }}
+        run: |
+          ECR_REGISTRY="$(aws sts get-caller-identity --query Account --output text).dkr.ecr.${{ inputs.aws_region }}.amazonaws.com"
+
+          helm upgrade --install "${HELM_RELEASE}" "${CHART_PATH}" \
+            --namespace "${K8S_NAMESPACE}" \
+            -f "${CHART_PATH}/values-aws-example.yaml" \
+            --set backend.image.repository="${ECR_REGISTRY}/${BACKEND_ECR_REPOSITORY}" \
+            --set frontend.image.repository="${ECR_REGISTRY}/${FRONTEND_ECR_REPOSITORY}" \
+            --set backend.image.tag="${IMAGE_TAG}" \
+            --set frontend.image.tag="${IMAGE_TAG}"
+
+      - name: Rollout status
+        run: |
+          kubectl rollout status deployment/"${HELM_RELEASE}-cloudops-sre-platform-backend" -n "${K8S_NAMESPACE}" --timeout=180s
+          kubectl rollout status deployment/"${HELM_RELEASE}-cloudops-sre-platform-frontend" -n "${K8S_NAMESPACE}" --timeout=180s
+
+      - name: Kubernetes summary
+        run: |
+          kubectl get pods,svc,ingress,hpa -n "${K8S_NAMESPACE}" -o wide
