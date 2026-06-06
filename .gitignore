@@ -15,10 +15,13 @@ build/
 .vite/
 
 *.log
+crash.log
 
 .terraform/
 *.tfstate
 *.tfstate.*
+*.tfplan
+tfplan
 terraform.tfvars
 
 kubeconfig*
