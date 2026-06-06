@@ -2,8 +2,6 @@
 
 CloudOps SRE Platform is a cloud-native reliability operations dashboard built for Amazon EKS. It tracks service health, deployments, incidents, MTTR, and SLO-style reliability metrics while demonstrating production-style Kubernetes deployment, CI/CD, autoscaling, observability, and infrastructure as code.
 
-This project is designed as a portfolio project for Cloud Engineer, Cloud Infrastructure Engineer, Junior DevOps Engineer, Associate SRE, Cloud Operations Engineer, and Cloud Network Engineer roles.
-
 ## What This Demonstrates
 
 - Production-style containerized app with React, FastAPI, PostgreSQL, Docker, and Nginx
@@ -13,9 +11,9 @@ This project is designed as a portfolio project for Cloud Engineer, Cloud Infras
 - SRE workflows for services, incidents, timelines, deployments, MTTR, HPA scale-out, CloudWatch logs, and Grafana proof
 - Cost-controlled AWS demo workflow designed to deploy, capture evidence, and destroy the same day
 
-## Current Status
+## Project Status
 
-Completed locally:
+Validated project components:
 
 - FastAPI backend and React frontend
 - PostgreSQL schema and seeded data
@@ -30,7 +28,7 @@ Completed locally:
 - HPA/k6 load-test proof assets
 - Observability evidence runbooks
 
-Not yet executed:
+Short-lived AWS demo workflow:
 
 - `terraform apply`
 - ECR image push
@@ -38,7 +36,7 @@ Not yet executed:
 - AWS screenshots
 - `terraform destroy`
 
-No AWS resources have been created yet.
+Run the AWS workflow only when ready to capture proof and destroy the environment the same day.
 
 ## Architecture
 
@@ -304,14 +302,3 @@ Evidence guide: [docs/evidence.md](docs/evidence.md)
 - [Runbook](docs/runbook.md)
 - [Cost Control](docs/cost-control.md)
 - [Evidence Checklist](docs/evidence.md)
-- [Resume Notes](docs/resume.md)
-
-## Resume Title
-
-CloudOps SRE Platform | EKS, Helm, ECR, RDS, Terraform, FastAPI, React
-
-## Resume Bullets
-
-- Built CloudOps SRE Platform, a cloud-native reliability operations dashboard on Amazon EKS using React, FastAPI, PostgreSQL/RDS, Docker, ECR, Helm, ALB Ingress, Terraform, and GitHub Actions.
-- Implemented service catalog, deployment tracking, P1-P4 incident workflows, incident timelines, MTTR metrics, health status dashboards, and SLO-style reliability views for production operations use cases.
-- Configured Kubernetes deployments, services, ingress, liveness/readiness probes, Secrets Manager integration, CloudWatch logging, Prometheus/Grafana dashboards, HPA autoscaling, and runbooks for failed deployments and service degradation.

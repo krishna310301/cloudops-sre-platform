@@ -58,7 +58,6 @@ resource "aws_eks_node_group" "primary" {
 
   depends_on = [
     aws_iam_role_policy_attachment.cloudwatch_agent,
-    aws_iam_role_policy_attachment.ebs_csi_driver,
     aws_iam_role_policy_attachment.eks_cni_policy,
     aws_iam_role_policy_attachment.eks_ecr_read_only,
     aws_iam_role_policy_attachment.eks_worker_node_policy,
@@ -78,13 +77,6 @@ resource "aws_eks_addon" "kube_proxy" {
 resource "aws_eks_addon" "coredns" {
   cluster_name = aws_eks_cluster.this.name
   addon_name   = "coredns"
-
-  depends_on = [aws_eks_node_group.primary]
-}
-
-resource "aws_eks_addon" "ebs_csi" {
-  cluster_name = aws_eks_cluster.this.name
-  addon_name   = "aws-ebs-csi-driver"
 
   depends_on = [aws_eks_node_group.primary]
 }

@@ -16,7 +16,7 @@ This project is designed for a short AWS proof deployment. Keep the AWS environm
 The Terraform defaults are designed for a short demo:
 
 - One NAT Gateway only
-- Two `t3.medium` EKS worker nodes by default
+- Two `t3.small` EKS worker nodes by default
 - One `db.t4g.micro` RDS PostgreSQL instance
 - No RDS Multi-AZ
 - No RDS deletion protection
