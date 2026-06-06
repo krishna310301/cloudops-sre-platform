@@ -254,7 +254,9 @@ Full AWS HPA proof: [docs/hpa-demo.md](docs/hpa-demo.md)
 
 ## AWS Demo Day
 
-The AWS deployment is intended to be short-lived. Do not leave these resources running overnight:
+This project is designed for a short-lived AWS demo deployment. To control cost, deploy only when ready to capture evidence, then destroy the environment the same day.
+
+Cost-bearing resources include:
 
 - EKS cluster and worker nodes
 - RDS PostgreSQL
@@ -262,34 +264,11 @@ The AWS deployment is intended to be short-lived. Do not leave these resources r
 - Application Load Balancer
 - CloudWatch log ingestion
 
-Before deploying:
+Before deploying, validate locally, confirm the AWS account and region, review `terraform plan`, and verify cost-bearing resources before running `terraform apply`.
 
-1. Run all local validation checks.
-2. Confirm AWS account and region.
-3. Run `terraform plan`.
-4. Review cost-bearing resources.
-5. Apply only when ready to capture screenshots.
-6. Destroy the same day.
-
-Checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)
-
-## Evidence To Capture
-
-- Live app dashboard on ALB URL
-- Services page
-- Incident detail timeline
-- Deployment history
-- GitHub Actions successful workflow
-- ECR backend/frontend images
-- EKS cluster and nodes
-- `kubectl get pods,svc,ingress,hpa`
-- HPA before/during/after k6 load
-- Grafana CPU/HPA graphs
-- CloudWatch backend/frontend logs
-- Terraform apply output
-- Terraform destroy confirmation
-
-Evidence guide: [docs/evidence.md](docs/evidence.md)
+Demo checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)  
+Evidence guide: [docs/evidence.md](docs/evidence.md)  
+Cost control guide: [docs/cost-control.md](docs/cost-control.md)
 
 ## Documentation
 

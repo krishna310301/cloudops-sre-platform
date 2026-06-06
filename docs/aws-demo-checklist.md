@@ -2,6 +2,16 @@
 
 This checklist is for the short-lived AWS proof deployment. Do not start unless you have time to capture evidence and destroy everything the same day.
 
+## Cost-Bearing Resources
+
+Review these resources before applying and confirm they are destroyed before ending the demo:
+
+- EKS cluster and worker nodes
+- RDS PostgreSQL
+- NAT Gateway
+- Application Load Balancer
+- CloudWatch log ingestion
+
 ## Before Apply
 
 - Docker local dev stack works
@@ -39,6 +49,8 @@ Review for:
 - Managed node group
 - RDS PostgreSQL
 - NAT Gateway
+- Application Load Balancer created later by Kubernetes ingress
+- CloudWatch log groups and log ingestion
 - ECR repositories
 - Secrets Manager secret
 - IAM roles
@@ -115,6 +127,22 @@ docs/evidence.md
 docs/hpa-demo.md
 docs/observability.md
 ```
+
+Minimum evidence set:
+
+- Live app dashboard on ALB URL
+- Services page
+- Incident detail timeline
+- Deployment history
+- GitHub Actions successful workflow
+- ECR backend/frontend images
+- EKS cluster and nodes
+- `kubectl get pods,svc,ingress,hpa`
+- HPA before/during/after k6 load
+- Grafana CPU/HPA graphs
+- CloudWatch backend/frontend logs
+- Terraform apply output
+- Terraform destroy confirmation
 
 ## Destroy Same Day
 
