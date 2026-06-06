@@ -1,11 +1,31 @@
 # Screenshots
 
-Store AWS demo screenshots here after the short-lived deployment.
+Store sanitized AWS demo screenshots here after a short-lived deployment. These images can be used both as GitHub proof and as source material for a LinkedIn project post.
 
-Suggested naming is documented in:
+Recommended folder pattern:
+
+```text
+docs/screenshots/aws-demo-YYYY-MM-DD/
+```
+
+Suggested file names are documented in:
 
 ```text
 docs/evidence.md
 ```
 
-Do not commit screenshots that expose sensitive account IDs, secrets, private endpoint details, or personal data.
+Before committing screenshots:
+
+- Crop or blur AWS account IDs, personal data, secrets, private endpoint details, and unnecessary browser chrome
+- Keep each image focused on one proof point
+- Prefer readable 16:9 screenshots for LinkedIn carousel reuse
+- Avoid screenshots that show credentials, environment variables, database passwords, or full secret values
+
+Recommended LinkedIn carousel order:
+
+1. Live dashboard on ALB URL
+2. EKS cluster and nodes
+3. Kubernetes pods, services, ingress, and HPA
+4. HPA scale-out during k6 load
+5. GitHub Actions successful workflow
+6. CloudWatch logs or Terraform destroy confirmation

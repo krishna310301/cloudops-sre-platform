@@ -267,6 +267,7 @@ Cost-bearing resources include:
 Before deploying, validate locally, confirm the AWS account and region, review `terraform plan`, and verify cost-bearing resources before running `terraform apply`.
 
 Demo checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)  
+Demo proof: [docs/demo-proof.md](docs/demo-proof.md)  
 Evidence guide: [docs/evidence.md](docs/evidence.md)  
 Cost control guide: [docs/cost-control.md](docs/cost-control.md)
 
@@ -275,6 +276,7 @@ Cost control guide: [docs/cost-control.md](docs/cost-control.md)
 - [Architecture](docs/architecture.md)
 - [Deployment](docs/deployment.md)
 - [AWS Add-ons](docs/aws-addons.md)
+- [AWS Demo Proof](docs/demo-proof.md)
 - [CI/CD](docs/ci-cd.md)
 - [HPA Demo](docs/hpa-demo.md)
 - [Observability](docs/observability.md)

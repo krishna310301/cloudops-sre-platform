@@ -5,8 +5,10 @@ Use this checklist during the short AWS demo deployment. Capture evidence before
 Recommended folder:
 
 ```text
-docs/screenshots/
+docs/screenshots/aws-demo-YYYY-MM-DD/
 ```
+
+Commit sanitized screenshots to GitHub after the demo so the repo contains visible proof of the EKS deployment. The same images can be reused for a LinkedIn project carousel.
 
 Suggested naming:
 
