@@ -1,32 +1,32 @@
 # CloudOps SRE Platform
 
-CloudOps SRE Platform is a cloud-native reliability operations dashboard built for Amazon EKS. It tracks service health, deployments, incidents, MTTR, and SLO-style reliability metrics while demonstrating production-style Kubernetes deployment, CI/CD, autoscaling, observability, and infrastructure as code.
+CloudOps SRE Platform is a cloud-native reliability operations dashboard built on Amazon EKS. It tracks service health, deployments, incidents, MTTR, and SLO-style reliability metrics for teams that need a clear view of operational health.
 
-## Project Snapshot
+## Why I Built This
 
-CloudOps SRE Platform is modeled after the kind of internal reliability console used by cloud operations and SRE teams. It brings service health, incident response, deployment history, MTTR, and reliability status into one operational view.
+Before moving deeper into cloud infrastructure, I worked in production network operations where incidents were real, SLAs mattered, and every handoff needed enough context for the next engineer to keep troubleshooting without losing time. That experience shaped how I think about reliability: service health, deployment history, timelines, ownership, and recovery metrics should be visible in one place.
 
-The AWS demo deployed the application on Amazon EKS using Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed infrastructure.
+This project is my bridge from network operations to cloud operations. I built the kind of internal SRE console I would want during a live incident: one place to register services, track health, record deployment changes, manage incident timelines, and understand MTTR.
 
-Deployment evidence is documented here:
+The AWS demo deployed the application on Amazon EKS using Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed infrastructure. The environment was destroyed after the demo to avoid ongoing cost.
 
-- [AWS demo evidence summary](docs/demo-proof.md)
+Demo notes and screenshots:
+
+- [AWS demo run summary](docs/demo-proof.md)
 - [Screenshot gallery](docs/screenshots/aws-demo-2026-06-06/README.md)
 
-The AWS environment was destroyed after the demo to avoid ongoing cost. The evidence includes Terraform destroy confirmation and post-demo cleanup validation.
-
-## What This Demonstrates
+## What I Built Into It
 
 - Production-style containerized app with React, FastAPI, PostgreSQL, Docker, and Nginx
 - Kubernetes packaging with Helm, probes, resource limits, HPA, services, and ALB ingress
 - AWS foundation with Terraform for VPC, EKS, ECR, RDS, IAM, Secrets Manager, and CloudWatch
 - CI/CD with GitHub Actions for tests, builds, image publishing, Terraform validation, and gated EKS deployment
 - SRE workflows for services, incidents, timelines, deployments, MTTR, HPA scale-out, CloudWatch logs, and observability runbooks
-- Cost-controlled AWS demo workflow designed to deploy, capture evidence, and destroy the same day
+- Cost-controlled AWS demo workflow designed to deploy, document the run, and destroy the same day
 
-## Project Status
+## Current State
 
-Validated project components:
+Working project components:
 
 - FastAPI backend and React frontend
 - PostgreSQL schema and seeded data
@@ -38,8 +38,8 @@ Validated project components:
 - Helm chart
 - GitHub Actions workflows
 - AWS add-on prep docs
-- HPA/k6 load-test evidence assets
-- Observability evidence runbooks
+- HPA/k6 load-test notes and screenshots
+- Observability runbooks
 
 Short-lived AWS demo workflow:
 
@@ -49,7 +49,7 @@ Short-lived AWS demo workflow:
 - AWS screenshots
 - `terraform destroy`
 
-Run the AWS workflow only when ready to capture evidence and destroy the environment the same day.
+Run the AWS workflow only when ready to capture screenshots and destroy the environment the same day.
 
 ## Architecture
 
@@ -80,7 +80,7 @@ More detail: [docs/architecture.md](docs/architecture.md)
 - Incident workflow with severity, status, timeline updates, and resolution
 - Deployment history with version, commit SHA, status, and deployment time
 - Metrics endpoint for reliability dashboard summaries
-- Bounded CPU demo endpoint for HPA validation: `/demo/cpu`
+- Bounded CPU demo endpoint for HPA testing: `/demo/cpu`
 
 ## Repository Structure
 
@@ -91,7 +91,7 @@ More detail: [docs/architecture.md](docs/architecture.md)
 ├── infra/                   # Terraform AWS foundation
 ├── charts/                  # Helm chart for EKS deployment
 ├── load-tests/              # k6 HPA load test
-├── docs/                    # Architecture, deployment, runbooks, evidence
+├── docs/                    # Architecture, deployment, runbooks, demo notes
 ├── .github/workflows/       # CI/CD and Terraform validation
 ├── docker-compose.yml       # Local dev stack
 └── docker-compose.prod.yml  # Production-style local stack
@@ -263,11 +263,11 @@ Expected:
 checks: 100%
 ```
 
-Full AWS HPA validation: [docs/hpa-demo.md](docs/hpa-demo.md)
+Full AWS HPA runbook: [docs/hpa-demo.md](docs/hpa-demo.md)
 
 ## AWS Demo Day
 
-This project is designed for a short-lived AWS demo deployment. To control cost, deploy only when ready to capture evidence, then destroy the environment the same day.
+This project is designed for a short-lived AWS demo deployment. To control cost, deploy only when ready to capture screenshots and notes, then destroy the environment the same day.
 
 Cost-bearing resources include:
 
@@ -277,16 +277,16 @@ Cost-bearing resources include:
 - Application Load Balancer
 - CloudWatch log ingestion
 
-Before deploying, validate locally, confirm the AWS account and region, review `terraform plan`, and verify cost-bearing resources before running `terraform apply`.
+Before deploying, validate locally, confirm the AWS account and region, review `terraform plan`, and check cost-bearing resources before running `terraform apply`.
 
 Demo checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)  
-Demo evidence: [docs/demo-proof.md](docs/demo-proof.md)  
-Evidence guide: [docs/evidence.md](docs/evidence.md)  
+Demo run summary: [docs/demo-proof.md](docs/demo-proof.md)  
+Screenshot checklist: [docs/evidence.md](docs/evidence.md)  
 Cost control guide: [docs/cost-control.md](docs/cost-control.md)
 
-## AWS Demo Evidence
+## AWS Demo Run
 
-The project was deployed to Amazon EKS for a short-lived demo run, validated through the live ALB endpoint, HPA scale-out under k6 load, and same-day Terraform destroy.
+The project was deployed to Amazon EKS for a short-lived demo run. The screenshots below capture the live ALB endpoint, HPA scale-out under k6 load, EKS nodes, and same-day Terraform destroy.
 
 | Live dashboard | HPA scale-out |
 |---|---|
@@ -303,10 +303,10 @@ Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots
 - [Architecture](docs/architecture.md)
 - [Deployment](docs/deployment.md)
 - [AWS Add-ons](docs/aws-addons.md)
-- [AWS Demo Evidence](docs/demo-proof.md)
+- [AWS Demo Run](docs/demo-proof.md)
 - [CI/CD](docs/ci-cd.md)
 - [HPA Demo](docs/hpa-demo.md)
 - [Observability](docs/observability.md)
 - [Runbook](docs/runbook.md)
 - [Cost Control](docs/cost-control.md)
-- [Evidence Checklist](docs/evidence.md)
+- [Screenshot Checklist](docs/evidence.md)
