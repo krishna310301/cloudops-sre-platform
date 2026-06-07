@@ -53,6 +53,8 @@ Run the AWS workflow only when ready to capture screenshots and destroy the envi
 
 ## Architecture
 
+![CloudOps SRE Platform Architecture](docs/architecture/cloudops-sre-platform-architecture.png)
+
 ```mermaid
 flowchart LR
     operator["Cloud / SRE Operator"] --> alb["AWS ALB Ingress"]
