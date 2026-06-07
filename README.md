@@ -2,13 +2,26 @@
 
 CloudOps SRE Platform is a cloud-native reliability operations dashboard built for Amazon EKS. It tracks service health, deployments, incidents, MTTR, and SLO-style reliability metrics while demonstrating production-style Kubernetes deployment, CI/CD, autoscaling, observability, and infrastructure as code.
 
+## Recruiter Quick Proof
+
+This project solves a real platform operations problem: giving cloud and SRE teams one place to track service health, production incidents, deployment history, MTTR, and reliability status.
+
+For the AWS demo, the app was deployed on Amazon EKS with Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed AWS infrastructure.
+
+Proof is available in the AWS demo evidence gallery:
+
+- [AWS demo proof summary](docs/demo-proof.md)
+- [Screenshot gallery](docs/screenshots/aws-demo-2026-06-06/README.md)
+
+The AWS environment was destroyed after proof capture to avoid ongoing cost. The evidence includes Terraform destroy confirmation and post-demo cleanup validation.
+
 ## What This Demonstrates
 
 - Production-style containerized app with React, FastAPI, PostgreSQL, Docker, and Nginx
 - Kubernetes packaging with Helm, probes, resource limits, HPA, services, and ALB ingress
 - AWS foundation with Terraform for VPC, EKS, ECR, RDS, IAM, Secrets Manager, and CloudWatch
 - CI/CD with GitHub Actions for tests, builds, image publishing, Terraform validation, and gated EKS deployment
-- SRE workflows for services, incidents, timelines, deployments, MTTR, HPA scale-out, CloudWatch logs, and Grafana proof
+- SRE workflows for services, incidents, timelines, deployments, MTTR, HPA scale-out, CloudWatch logs, and observability runbooks
 - Cost-controlled AWS demo workflow designed to deploy, capture evidence, and destroy the same day
 
 ## Project Status
