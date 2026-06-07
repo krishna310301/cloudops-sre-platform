@@ -2,18 +2,18 @@
 
 CloudOps SRE Platform is a cloud-native reliability operations dashboard built for Amazon EKS. It tracks service health, deployments, incidents, MTTR, and SLO-style reliability metrics while demonstrating production-style Kubernetes deployment, CI/CD, autoscaling, observability, and infrastructure as code.
 
-## Recruiter Quick Proof
+## Project Snapshot
 
-This project solves a real platform operations problem: giving cloud and SRE teams one place to track service health, production incidents, deployment history, MTTR, and reliability status.
+CloudOps SRE Platform is modeled after the kind of internal reliability console used by cloud operations and SRE teams. It brings service health, incident response, deployment history, MTTR, and reliability status into one operational view.
 
-For the AWS demo, the app was deployed on Amazon EKS with Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed AWS infrastructure.
+The AWS demo deployed the application on Amazon EKS using Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed infrastructure.
 
-Proof is available in the AWS demo evidence gallery:
+Deployment evidence is documented here:
 
-- [AWS demo proof summary](docs/demo-proof.md)
+- [AWS demo evidence summary](docs/demo-proof.md)
 - [Screenshot gallery](docs/screenshots/aws-demo-2026-06-06/README.md)
 
-The AWS environment was destroyed after proof capture to avoid ongoing cost. The evidence includes Terraform destroy confirmation and post-demo cleanup validation.
+The AWS environment was destroyed after the demo to avoid ongoing cost. The evidence includes Terraform destroy confirmation and post-demo cleanup validation.
 
 ## What This Demonstrates
 
@@ -38,7 +38,7 @@ Validated project components:
 - Helm chart
 - GitHub Actions workflows
 - AWS add-on prep docs
-- HPA/k6 load-test proof assets
+- HPA/k6 load-test evidence assets
 - Observability evidence runbooks
 
 Short-lived AWS demo workflow:
@@ -49,7 +49,7 @@ Short-lived AWS demo workflow:
 - AWS screenshots
 - `terraform destroy`
 
-Run the AWS workflow only when ready to capture proof and destroy the environment the same day.
+Run the AWS workflow only when ready to capture evidence and destroy the environment the same day.
 
 ## Architecture
 
@@ -80,7 +80,7 @@ More detail: [docs/architecture.md](docs/architecture.md)
 - Incident workflow with severity, status, timeline updates, and resolution
 - Deployment history with version, commit SHA, status, and deployment time
 - Metrics endpoint for reliability dashboard summaries
-- Bounded CPU demo endpoint for HPA proof: `/demo/cpu`
+- Bounded CPU demo endpoint for HPA validation: `/demo/cpu`
 
 ## Repository Structure
 
@@ -263,7 +263,7 @@ Expected:
 checks: 100%
 ```
 
-Full AWS HPA proof: [docs/hpa-demo.md](docs/hpa-demo.md)
+Full AWS HPA validation: [docs/hpa-demo.md](docs/hpa-demo.md)
 
 ## AWS Demo Day
 
@@ -280,13 +280,13 @@ Cost-bearing resources include:
 Before deploying, validate locally, confirm the AWS account and region, review `terraform plan`, and verify cost-bearing resources before running `terraform apply`.
 
 Demo checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)  
-Demo proof: [docs/demo-proof.md](docs/demo-proof.md)  
+Demo evidence: [docs/demo-proof.md](docs/demo-proof.md)  
 Evidence guide: [docs/evidence.md](docs/evidence.md)  
 Cost control guide: [docs/cost-control.md](docs/cost-control.md)
 
-## AWS Demo Proof
+## AWS Demo Evidence
 
-The project was deployed to Amazon EKS for a short-lived proof run, validated through the live ALB endpoint, HPA scale-out under k6 load, and same-day Terraform destroy.
+The project was deployed to Amazon EKS for a short-lived demo run, validated through the live ALB endpoint, HPA scale-out under k6 load, and same-day Terraform destroy.
 
 | Live dashboard | HPA scale-out |
 |---|---|
@@ -303,7 +303,7 @@ Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots
 - [Architecture](docs/architecture.md)
 - [Deployment](docs/deployment.md)
 - [AWS Add-ons](docs/aws-addons.md)
-- [AWS Demo Proof](docs/demo-proof.md)
+- [AWS Demo Evidence](docs/demo-proof.md)
 - [CI/CD](docs/ci-cd.md)
 - [HPA Demo](docs/hpa-demo.md)
 - [Observability](docs/observability.md)
