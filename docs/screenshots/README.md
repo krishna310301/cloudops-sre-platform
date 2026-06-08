@@ -1,6 +1,6 @@
 # Screenshots
 
-Store sanitized AWS demo screenshots here after a short-lived deployment. These images can be used both as GitHub proof and as source material for a LinkedIn project post.
+Store sanitized AWS demo screenshots here after a short-lived deployment. These images can be used both as GitHub documentation and as source material for a LinkedIn project post.
 
 Recommended folder pattern:
 
@@ -21,7 +21,7 @@ docs/evidence.md
 Before committing screenshots:
 
 - Crop or blur AWS account IDs, personal data, secrets, private endpoint details, and unnecessary browser chrome
-- Keep each image focused on one proof point
+- Keep each image focused on one validation point
 - Prefer readable 16:9 screenshots for LinkedIn carousel reuse
 - Avoid screenshots that show credentials, environment variables, database passwords, or full secret values
 

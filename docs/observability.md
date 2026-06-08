@@ -1,15 +1,15 @@
 # Observability
 
-This document captures the CloudOps SRE Platform observability proof for AWS EKS.
+This document covers the CloudOps SRE Platform observability checks for AWS EKS.
 
 Do not run the AWS commands until the short-lived demo environment is created.
 
 ## Observability Components
 
 - CloudWatch Logs through the Amazon CloudWatch Observability EKS add-on
-- Prometheus and Grafana through `kube-prometheus-stack`
 - Metrics Server for HPA CPU metrics
 - Kubernetes events and rollout status through `kubectl`
+- Optional Prometheus and Grafana dashboards through `kube-prometheus-stack`
 
 ## CloudWatch Logs
 
@@ -67,7 +67,9 @@ Capture screenshots:
 - Backend pod log events
 - Frontend/Nginx log events if visible
 
-## Prometheus And Grafana
+## Optional Prometheus And Grafana
+
+The completed AWS demo captured CloudWatch logs, Kubernetes status, and HPA scale-out. Prometheus and Grafana are documented as an optional add-on path for a deeper observability run.
 
 Install commands are in:
 
@@ -142,6 +144,7 @@ Capture screenshots:
 - CloudWatch application log group
 - Backend logs in CloudWatch
 - Frontend logs in CloudWatch
-- Grafana pod CPU/memory dashboard
-- HPA scale-out graph
 - Kubernetes `kubectl get pods,svc,ingress,hpa`
+- HPA scale-out from `kubectl get hpa`, `kubectl top pods`, and pod replica changes
+- Optional Grafana pod CPU/memory dashboard
+- Optional Grafana HPA scale-out graph

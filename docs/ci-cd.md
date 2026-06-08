@@ -96,4 +96,4 @@ Before running the manual AWS deploy job:
 - AWS Load Balancer Controller is installed in the EKS cluster
 - Metrics Server is installed for HPA CPU metrics
 - The database secret contains a `database_url` key
-- You are ready to capture proof and destroy the environment the same day
+- You are ready to capture screenshots and destroy the environment the same day

@@ -22,6 +22,7 @@ Demo notes and screenshots:
 - AWS foundation with Terraform for VPC, EKS, ECR, RDS, IAM, Secrets Manager, and CloudWatch
 - CI/CD with GitHub Actions for tests, builds, image publishing, Terraform validation, and gated EKS deployment
 - SRE workflows for services, incidents, timelines, deployments, MTTR, HPA scale-out, CloudWatch logs, and observability runbooks
+- Optional Prometheus/Grafana add-on notes for deeper Kubernetes metrics beyond the completed CloudWatch/HPA demo
 - Cost-controlled AWS demo workflow designed to deploy, document the run, and destroy the same day
 
 ## Current State
@@ -67,8 +68,6 @@ flowchart LR
     ecr --> eks["Amazon EKS"]
     tf["Terraform"] --> aws["VPC / EKS / RDS / ECR / IAM / Secrets"]
     eks --> cw["CloudWatch Logs"]
-    eks --> prom["Prometheus"]
-    prom --> grafana["Grafana"]
     metrics["Metrics Server"] --> hpa["Backend HPA"]
     hpa --> backend
 ```

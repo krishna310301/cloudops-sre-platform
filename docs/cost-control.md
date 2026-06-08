@@ -1,6 +1,6 @@
 # Cost Control
 
-This project is designed for a short AWS proof deployment. Keep the AWS environment running only long enough to capture screenshots and validate the platform.
+This project is designed for a short AWS demo deployment. Keep the AWS environment running only long enough to capture screenshots and validate the platform.
 
 ## Expensive Resources To Destroy
 
@@ -49,13 +49,18 @@ Before `terraform destroy`, uninstall add-ons that may create AWS resources or K
 
 ```bash
 helm uninstall cloudops -n cloudops
-helm uninstall kube-prometheus-stack -n monitoring
 helm uninstall metrics-server -n kube-system
 helm uninstall aws-load-balancer-controller -n kube-system
 
 aws eks delete-addon \
   --cluster-name "$(terraform -chdir=infra output -raw cluster_name)" \
   --addon-name amazon-cloudwatch-observability
+```
+
+If Grafana was installed, also run:
+
+```bash
+helm uninstall kube-prometheus-stack -n monitoring
 ```
 
 Then check that the ALB created by the app ingress is gone before destroying the VPC.

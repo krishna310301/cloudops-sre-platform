@@ -1,6 +1,6 @@
-# AWS Demo Proof
+# AWS Demo Run
 
-This page records evidence from the short-lived AWS demo deployment of CloudOps SRE Platform. Screenshot evidence is stored in [docs/screenshots/aws-demo-2026-06-06](screenshots/aws-demo-2026-06-06/).
+This page records the short-lived AWS demo deployment of CloudOps SRE Platform. Screenshots are stored in [docs/screenshots/aws-demo-2026-06-06](screenshots/aws-demo-2026-06-06/).
 
 ## Demo Run Summary
 
@@ -10,7 +10,7 @@ This page records evidence from the short-lived AWS demo deployment of CloudOps 
 - Result: application deployed successfully on Amazon EKS behind an AWS Application Load Balancer
 - Cleanup: Terraform destroy completed with `49 destroyed`, and post-destroy checks confirmed cost-bearing resources were removed
 
-## Application Proof
+## Application Results
 
 Temporary ALB endpoint observed during the demo:
 
@@ -36,7 +36,7 @@ failed deployments: 1
 platform status: critical
 ```
 
-## Kubernetes And HPA Proof
+## Kubernetes And HPA Results
 
 Baseline HPA state before load:
 
@@ -69,7 +69,7 @@ backend HPA: cpu 2% / 60%, replicas 2
 backend deployment: 2/2 available
 ```
 
-## Cleanup Proof
+## Cleanup Results
 
 After the demo, the application and Kubernetes add-ons were uninstalled, the ALB was deleted, and Terraform destroy completed.
 

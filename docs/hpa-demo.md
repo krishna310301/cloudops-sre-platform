@@ -1,6 +1,6 @@
 # HPA Demo
 
-This runbook captures proof that the backend scales under CPU load on EKS.
+This runbook captures how the backend scales under CPU load on EKS.
 
 Do not run this until:
 
@@ -9,7 +9,7 @@ Do not run this until:
 - Metrics Server is installed
 - CloudOps app is deployed with Helm
 - The ALB URL is reachable
-- You are ready to capture proof and destroy the AWS environment the same day
+- You are ready to capture screenshots and destroy the AWS environment the same day
 
 ## 1. Verify HPA Baseline
 
@@ -123,7 +123,9 @@ Capture screenshots:
 - `kubectl get pods -n cloudops -o wide`
 - `kubectl top pods -n cloudops`
 
-## 5. Grafana Evidence
+## 5. Optional Grafana Capture
+
+The completed AWS demo used `kubectl`, Metrics Server, CloudWatch logs, and screenshots to document HPA behavior. Use this section only if the optional Prometheus/Grafana add-on is installed.
 
 Open Grafana:
 
@@ -185,6 +187,7 @@ kubectl get pods -n cloudops
 - k6 load test running
 - Backend pod scale-out
 - HPA CPU target above threshold
-- Grafana CPU graph
-- Grafana HPA/current replicas graph
+- `kubectl top pods` during load
+- Optional Grafana CPU graph
+- Optional Grafana HPA/current replicas graph
 - Scale-in after load stops

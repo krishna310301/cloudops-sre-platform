@@ -1,6 +1,6 @@
 # AWS Demo Day Checklist
 
-This checklist is for the short-lived AWS proof deployment. Do not start unless you have time to capture evidence and destroy everything the same day.
+This checklist is for the short-lived AWS demo deployment. Do not start unless you have time to capture screenshots and destroy everything the same day.
 
 ## Cost-Bearing Resources
 
@@ -92,7 +92,7 @@ Install:
 - AWS Load Balancer Controller
 - Metrics Server
 - CloudWatch Observability add-on
-- kube-prometheus-stack
+- Optional kube-prometheus-stack for Grafana dashboards
 
 ## Deploy App
 
@@ -118,7 +118,7 @@ kubectl rollout status deployment/cloudops-cloudops-sre-platform-backend -n clou
 kubectl rollout status deployment/cloudops-cloudops-sre-platform-frontend -n cloudops
 ```
 
-## Capture Proof
+## Capture Demo Artifacts
 
 Use:
 
@@ -139,10 +139,13 @@ Minimum evidence set:
 - EKS cluster and nodes
 - `kubectl get pods,svc,ingress,hpa`
 - HPA before/during/after k6 load
-- Grafana CPU/HPA graphs
 - CloudWatch backend/frontend logs
 - Terraform apply output
 - Terraform destroy confirmation
+
+Optional:
+
+- Grafana CPU/HPA graphs if kube-prometheus-stack is installed
 
 ## Destroy Same Day
 
@@ -150,10 +153,15 @@ Uninstall app/add-ons:
 
 ```bash
 helm uninstall cloudops -n cloudops
-helm uninstall kube-prometheus-stack -n monitoring
 helm uninstall metrics-server -n kube-system
 helm uninstall aws-load-balancer-controller -n kube-system
 aws eks delete-addon --cluster-name "$(terraform -chdir=infra output -raw cluster_name)" --addon-name amazon-cloudwatch-observability
+```
+
+If Grafana was installed, also run:
+
+```bash
+helm uninstall kube-prometheus-stack -n monitoring
 ```
 
 Destroy:

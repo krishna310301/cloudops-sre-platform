@@ -38,7 +38,7 @@ Do not run `terraform apply` until the AWS deployment checklist is complete.
 6. Run `terraform apply` only when ready to create the short-lived demo.
 7. Build and push backend/frontend images to ECR.
 8. Deploy application Helm chart to EKS.
-9. Capture proof screenshots.
+9. Capture demo screenshots.
 10. Run `terraform destroy` the same day.
 
 ## GitHub Actions
@@ -58,7 +58,7 @@ Before deploying the app chart to EKS, install and verify:
 - AWS Load Balancer Controller
 - Metrics Server
 - Amazon CloudWatch Observability add-on
-- kube-prometheus-stack
+- Optional kube-prometheus-stack for Grafana dashboards
 
 Commands are documented in:
 

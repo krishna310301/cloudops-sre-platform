@@ -8,7 +8,7 @@ Recommended folder:
 docs/screenshots/aws-demo-YYYY-MM-DD/
 ```
 
-Commit sanitized screenshots to GitHub after the demo so the repo contains visible proof of the EKS deployment. The same images can be reused for a LinkedIn project carousel.
+Commit sanitized screenshots to GitHub after the demo so the repo documents the EKS deployment clearly. The same images can be reused for a LinkedIn project carousel.
 
 Suggested naming:
 
@@ -24,7 +24,7 @@ Suggested naming:
 09-hpa-before-load.png
 10-hpa-during-load.png
 11-hpa-after-load.png
-12-grafana-cpu-scaling.png
+12-cloudwatch-log-groups.png
 13-cloudwatch-backend-logs.png
 14-terraform-apply-output.png
 15-terraform-destroy-output.png
@@ -97,7 +97,14 @@ aws logs describe-log-groups \
   --output table
 ```
 
-Grafana:
+Minimum capture:
+
+- CloudWatch application log group
+- Backend and frontend application logs
+- HPA status before, during, and after k6 load
+- Pod count during scale-out
+
+Optional Grafana capture:
 
 - Backend CPU during k6 load
 - Backend memory

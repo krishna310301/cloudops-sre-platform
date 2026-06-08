@@ -27,8 +27,6 @@ flowchart TB
     terraform --> iam["IAM / IRSA"]
 
     eks --> cloudwatch["CloudWatch Logs"]
-    eks --> prometheus["Prometheus"]
-    prometheus --> grafana["Grafana"]
     metrics["Metrics Server"] --> hpa["Backend HPA"]
     hpa --> backendPods
 ```
@@ -100,9 +98,9 @@ The Helm chart renders:
 ## Observability Flow
 
 - CloudWatch Observability add-on collects pod logs and cluster telemetry.
-- kube-prometheus-stack collects Kubernetes and pod metrics.
-- Grafana visualizes backend CPU, memory, pod count, and HPA behavior.
 - Metrics Server provides CPU data used by the backend HPA.
+- HPA behavior can be verified with `kubectl get hpa`, `kubectl top pods`, CloudWatch logs, and load-test screenshots.
+- kube-prometheus-stack and Grafana are documented as optional add-ons for deeper Kubernetes dashboards, but were not part of the completed AWS demo evidence run.
 
 ## Security And Operations Notes
 

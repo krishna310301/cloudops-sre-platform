@@ -145,10 +145,15 @@ Before destroy:
 
 ```bash
 helm uninstall cloudops -n cloudops
-helm uninstall kube-prometheus-stack -n monitoring
 helm uninstall metrics-server -n kube-system
 helm uninstall aws-load-balancer-controller -n kube-system
 aws eks delete-addon --cluster-name "$(terraform -chdir=infra output -raw cluster_name)" --addon-name amazon-cloudwatch-observability
+```
+
+If Grafana was installed, also run:
+
+```bash
+helm uninstall kube-prometheus-stack -n monitoring
 ```
 
 Destroy:

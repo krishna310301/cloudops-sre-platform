@@ -1,13 +1,13 @@
 # AWS EKS Add-Ons
 
-This document prepares the Kubernetes add-ons needed after Terraform creates the short-lived AWS demo cluster.
+This document prepares the Kubernetes add-ons used after Terraform creates the short-lived AWS demo cluster. AWS Load Balancer Controller, Metrics Server, and CloudWatch Observability are part of the main demo path; kube-prometheus-stack is optional for a deeper Grafana run.
 
 Do not run these commands until:
 
 - `terraform apply` has completed successfully
 - `aws eks update-kubeconfig` works
 - ECR images exist
-- You are ready to capture proof and destroy the environment the same day
+- You are ready to capture screenshots and destroy the environment the same day
 
 ## Source Versions
 
@@ -20,7 +20,7 @@ The AWS Load Balancer Controller instructions are pinned to the versions referen
 Other add-on versions:
 
 - Metrics Server Helm chart: `3.13.0`
-- kube-prometheus-stack Helm chart: `86.1.0`
+- Optional kube-prometheus-stack Helm chart: `86.1.0`
 - Amazon CloudWatch Observability EKS add-on: use the default version selected by EKS for the cluster version
 
 ## 1. Connect To EKS
@@ -162,7 +162,9 @@ Expected:
 - `/aws/containerinsights/<cluster-name>/dataplane`
 - `/aws/containerinsights/<cluster-name>/host`
 
-## 5. Prometheus And Grafana
+## 5. Optional Prometheus And Grafana
+
+The completed AWS demo did not install Grafana in order to keep the run short and cost-controlled. Use this section if you want an expanded observability demo with Prometheus and Grafana dashboards.
 
 Install kube-prometheus-stack in a dedicated namespace:
 
@@ -235,7 +237,7 @@ kubectl rollout status deployment/cloudops-cloudops-sre-platform-backend -n clou
 kubectl rollout status deployment/cloudops-cloudops-sre-platform-frontend -n cloudops
 ```
 
-## 7. Evidence To Capture
+## 7. Screenshots To Capture
 
 Capture screenshots of:
 
@@ -244,10 +246,13 @@ Capture screenshots of:
 - `kubectl top nodes`
 - `aws eks describe-addon --cluster-name "$CLUSTER_NAME" --addon-name amazon-cloudwatch-observability`
 - CloudWatch application log group with backend/frontend pod logs
-- `kubectl get pods -n monitoring`
-- Grafana dashboard showing pod CPU/memory
 - `kubectl get pods,svc,ingress,hpa -n cloudops -o wide`
 - Live CloudOps dashboard on the ALB URL
+
+Optional if kube-prometheus-stack is installed:
+
+- `kubectl get pods -n monitoring`
+- Grafana dashboard showing pod CPU/memory
 
 ## 8. Cleanup Reminder
 
@@ -255,13 +260,18 @@ Before running `terraform destroy`, delete Helm releases that created load balan
 
 ```bash
 helm uninstall cloudops -n cloudops
-helm uninstall kube-prometheus-stack -n monitoring
 helm uninstall metrics-server -n kube-system
 helm uninstall aws-load-balancer-controller -n kube-system
 
 aws eks delete-addon \
   --cluster-name "$(terraform -chdir=infra output -raw cluster_name)" \
   --addon-name amazon-cloudwatch-observability
+```
+
+If Grafana was installed, also run:
+
+```bash
+helm uninstall kube-prometheus-stack -n monitoring
 ```
 
 Then run:
