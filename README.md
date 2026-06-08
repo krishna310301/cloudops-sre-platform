@@ -308,6 +308,7 @@ Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots
 
 ## Documentation
 
+- [Changelog](docs/changelog.md)
 - [Architecture](docs/architecture.md)
 - [Deployment](docs/deployment.md)
 - [AWS Add-ons](docs/aws-addons.md)
