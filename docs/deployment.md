@@ -28,6 +28,22 @@ Success! The configuration is valid.
 
 Do not run `terraform apply` until the AWS deployment checklist is complete.
 
+## Terraform State Mode
+
+The repository defaults to local Terraform state for the same-day AWS demo workflow. State files are ignored by git and should never be committed.
+
+For a team-style or longer-lived deployment, use the optional S3 backend template:
+
+```text
+infra/backend.tf.example
+```
+
+Remote state setup and cleanup notes are documented in:
+
+```text
+docs/terraform-state.md
+```
+
 ## Planned AWS Deployment Flow
 
 1. Confirm AWS CLI credentials and target AWS account.

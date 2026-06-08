@@ -24,6 +24,12 @@ The Terraform defaults are designed for a short demo:
 - CloudWatch log retention set to 7 days
 - Secrets Manager recovery window set to 0 days for immediate cleanup
 
+Terraform state guardrail:
+
+- The short demo can use local state because it is a single-operator, same-day run.
+- For repeatable or team-style deployments, use the optional S3 backend documented in `docs/terraform-state.md`.
+- If remote state is enabled, destroy CloudOps resources before deleting the state bucket.
+
 Before any AWS apply, run:
 
 ```bash

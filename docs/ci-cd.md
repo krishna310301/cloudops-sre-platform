@@ -24,7 +24,7 @@ Jobs:
 - `terraform fmt -check -recursive`
 - `terraform validate`
 
-This workflow does not create AWS resources.
+This workflow does not create AWS resources or require access to the optional remote state backend. Remote state setup is documented in `docs/terraform-state.md`.
 
 ### CI CD
 

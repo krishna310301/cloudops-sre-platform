@@ -1,0 +1,22 @@
+# Optional remote state backend for team-style Terraform runs.
+#
+# This file is intentionally not active by default. For the short-lived portfolio
+# demo, local state is acceptable as long as terraform.tfstate is kept out of git.
+#
+# To enable remote state:
+# 1. Create the S3 state bucket outside this Terraform configuration.
+# 2. Enable bucket versioning, encryption, and public-access blocking.
+# 3. Copy this file to infra/backend.tf and replace the placeholders.
+# 4. Run: terraform -chdir=infra init -migrate-state
+#
+# Do not commit infra/backend.tf with personal account-specific backend values.
+
+terraform {
+  backend "s3" {
+    bucket       = "REPLACE_WITH_UNIQUE_TFSTATE_BUCKET"
+    key          = "cloudops-sre-platform/demo/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
+  }
+}

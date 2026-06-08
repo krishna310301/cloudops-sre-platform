@@ -189,6 +189,13 @@ Success! The configuration is valid.
 
 Do not run `terraform apply` until the deploy-day checklist is complete.
 
+Terraform state modes:
+
+- Short-lived single-operator demo: local state, with `*.tfstate` ignored by git
+- Team-style repeatable deployment: optional S3 backend using [infra/backend.tf.example](infra/backend.tf.example)
+
+Remote state setup notes are documented in [docs/terraform-state.md](docs/terraform-state.md).
+
 ## Helm Validation
 
 If Helm is installed:

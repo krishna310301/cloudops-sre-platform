@@ -23,6 +23,7 @@ Review these resources before applying and confirm they are destroyed before end
 - k6 smoke test passes
 - AWS CLI is authenticated to the correct account
 - Region is confirmed
+- Terraform state mode is confirmed: local state for same-day demo, or optional S3 backend for repeatable/team use
 - Budget/cost expectations are understood
 
 Validation bundle:
@@ -42,6 +43,8 @@ docker run --rm -e BASE_URL="http://host.docker.internal:8080" -e TARGET_PATH="/
 cp infra/terraform.tfvars.example infra/terraform.tfvars
 terraform -chdir=infra plan
 ```
+
+If using remote state, configure `infra/backend.tf` from `infra/backend.tf.example` and run `terraform -chdir=infra init -migrate-state` before planning. For the short-lived demo path, keep the default local state workflow.
 
 Review for:
 
