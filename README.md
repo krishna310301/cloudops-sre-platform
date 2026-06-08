@@ -8,14 +8,14 @@ Before moving deeper into cloud infrastructure, I worked in production network o
 
 This project is my bridge from network operations to cloud operations. I built the kind of internal SRE console I would want during a live incident: one place to register services, track health, record deployment changes, manage incident timelines, and understand MTTR.
 
-The AWS demo deployed the application on Amazon EKS using Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed infrastructure. The environment was destroyed after the demo to avoid ongoing cost.
+I also took it through a short AWS run on Amazon EKS using Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed infrastructure. I destroyed the environment after capturing the run so the project stays cost-controlled.
 
 Demo notes and screenshots:
 
 - [AWS demo run summary](docs/demo-proof.md)
 - [Screenshot gallery](docs/screenshots/aws-demo-2026-06-06/README.md)
 
-## What I Built Into It
+## What This Covers
 
 - Production-style containerized app with React, FastAPI, PostgreSQL, Docker, and Nginx
 - Kubernetes packaging with Helm, probes, resource limits, HPA, services, and ALB ingress
@@ -23,9 +23,9 @@ Demo notes and screenshots:
 - CI/CD with GitHub Actions for tests, builds, image publishing, Terraform validation, and gated EKS deployment
 - SRE workflows for services, incidents, timelines, deployments, MTTR, HPA scale-out, CloudWatch logs, and observability runbooks
 - Optional Prometheus/Grafana add-on notes for deeper Kubernetes metrics beyond the completed CloudWatch/HPA demo
-- Cost-controlled AWS demo workflow designed to deploy, document the run, and destroy the same day
+- Same-day AWS demo workflow: deploy, capture the run, and destroy before costs linger
 
-## Current State
+## Project Status
 
 Working project components:
 
@@ -42,7 +42,7 @@ Working project components:
 - HPA/k6 load-test notes and screenshots
 - Observability runbooks
 
-Short-lived AWS demo workflow:
+The short-lived AWS run followed this path:
 
 - `terraform apply`
 - ECR image push
@@ -50,7 +50,7 @@ Short-lived AWS demo workflow:
 - AWS screenshots
 - `terraform destroy`
 
-Run the AWS workflow only when ready to capture screenshots and destroy the environment the same day.
+I only run the AWS workflow when I have time to capture screenshots and destroy the environment the same day.
 
 ## Architecture
 
