@@ -1,5 +1,8 @@
 # CloudOps SRE Platform
 
+[![CI CD](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/deploy.yml/badge.svg)](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/deploy.yml)
+[![Terraform Validate](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/terraform-validate.yml/badge.svg)](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/terraform-validate.yml)
+
 CloudOps SRE Platform is a cloud-native reliability operations dashboard built on Amazon EKS. It tracks service health, deployments, incidents, MTTR, and SLO-style reliability metrics for teams that need a clear view of operational health.
 
 ## Why I Built This
