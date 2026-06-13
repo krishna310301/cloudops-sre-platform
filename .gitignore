@@ -28,3 +28,9 @@ infra/backend.tf
 
 kubeconfig*
 coverage/
+
+# Local sibling projects kept outside this repository's scope.
+aws-incident-triage-pipeline/
+cloudops-uptime-monitor/
+github-profile-readme/
+resume/

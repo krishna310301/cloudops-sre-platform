@@ -49,6 +49,33 @@ Review the plan for these resources:
 
 Do not apply if you cannot destroy the environment the same day.
 
+## CI Cost And Security Checks
+
+GitHub Actions runs:
+
+- `terraform fmt -check -recursive`
+- `terraform validate`
+- `python scripts/terraform_cost_guardrails.py`
+- Checkov Terraform scan against `infra/`
+
+The guardrail script fails CI if the short-lived demo profile drifts from the
+documented limits, including RDS size, EKS node count, CloudWatch retention, NAT
+Gateway count, RDS public exposure, RDS encryption, ECR lifecycle cleanup, and
+Secrets Manager cleanup settings.
+
+Expected Checkov review items for this portfolio demo can include:
+
+- RDS backups, final snapshots, deletion protection, and Multi-AZ are disabled
+  intentionally so the same-day demo can be destroyed cleanly.
+- The EKS public endpoint is enabled for demo access, while private endpoint
+  access is also enabled.
+- ECR repositories are mutable and force-deleteable to keep image publishing and
+  cleanup simple for a short validation run.
+- Public subnets and an internet-facing ALB are expected for the browser demo.
+
+Treat new Checkov findings outside these documented tradeoffs as follow-up work
+before running another AWS demo.
+
 ## Add-On Cleanup
 
 Before `terraform destroy`, uninstall add-ons that may create AWS resources or Kubernetes resources with finalizers:

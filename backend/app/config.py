@@ -16,6 +16,8 @@ class Settings(BaseSettings):
         default="http://localhost:5173,http://localhost:3000",
         alias="CORS_ORIGINS",
     )
+    log_level: str = Field(default="INFO", alias="LOG_LEVEL")
+    log_format: str = Field(default="json", alias="LOG_FORMAT")
 
     @property
     def cors_origin_list(self) -> list[str]:

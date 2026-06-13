@@ -10,6 +10,30 @@ The project is validated locally through:
 - Frontend production build
 - Terraform formatting and validation
 
+## Database Migrations
+
+Backend schema changes are versioned with Alembic under:
+
+```text
+backend/alembic
+```
+
+Local Docker Compose runs migrations automatically before Uvicorn starts:
+
+```text
+alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+For local backend development outside Docker, run from `backend/`:
+
+```bash
+alembic upgrade head
+```
+
+For EKS/RDS deployments, the Helm chart creates a pre-install/pre-upgrade migration Job. The Job uses the backend image and the same `DATABASE_URL` Kubernetes Secret as the API deployment, so migrations run before new backend pods roll out.
+
+The AWS deployment flow syncs the database URL from Secrets Manager into the Kubernetes Secret before `helm upgrade --install`, which keeps the migration Job on the same credential path as the application.
+
 ## Terraform Validation Only
 
 Run these commands from the repository root:
@@ -122,8 +146,12 @@ Expected manifest kinds include:
 - `ConfigMap`
 - `Service`
 - `Deployment`
+- migration `Job`
 - `HorizontalPodAutoscaler`
 - `Ingress`
 - Helm test `Pod`
+
+CI also validates the rendered AWS-style manifests with kubeconform in strict
+mode before any manual deployment can run.
 
 Do not run `helm upgrade --install` until EKS, ECR images, database secret, and AWS Load Balancer Controller are ready.

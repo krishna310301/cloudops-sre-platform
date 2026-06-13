@@ -111,6 +111,18 @@ class DeploymentRead(DeploymentBase):
     created_at: datetime
 
 
+class ServiceReliabilityRead(BaseModel):
+    service_id: int
+    name: str
+    status: ServiceStatus
+    slo_target: float
+    sli_uptime_percent: float
+    error_budget_percent: float
+    error_budget_remaining_percent: float
+    error_budget_burn_percent: float
+    error_budget_status: Literal["healthy", "at_risk", "exhausted"]
+
+
 class MetricsRead(BaseModel):
     total_services: int
     healthy_services: int
@@ -121,3 +133,7 @@ class MetricsRead(BaseModel):
     last_deployment: DeploymentRead | None
     current_platform_status: Literal["operational", "degraded", "critical"]
     open_incidents_by_severity: dict[str, int]
+    services_meeting_slo: int
+    services_breaching_slo: int
+    average_sli_uptime_percent: float | None
+    service_reliability: list[ServiceReliabilityRead]

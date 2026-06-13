@@ -1,14 +1,22 @@
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import logging
 from time import perf_counter
+from uuid import uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.config import get_settings
 from app.database import SessionLocal, get_db, init_db
+from app.logging import (
+    REQUEST_ID_HEADER,
+    configure_logging,
+    reset_request_id,
+    set_request_id,
+)
 from app.models import Deployment, Incident, IncidentUpdate, Service
 from app.schemas import (
     DeploymentCreate,
@@ -27,6 +35,8 @@ from app.schemas import (
 from app.seed import seed_database
 
 settings = get_settings()
+configure_logging(settings.log_level, settings.log_format, settings.app_env)
+logger = logging.getLogger("cloudops.api")
 
 
 @asynccontextmanager
@@ -54,6 +64,57 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def request_id_from_header(header_value: str | None) -> str:
+    if header_value:
+        request_id = header_value.strip()
+        if request_id and "\n" not in request_id and "\r" not in request_id:
+            return request_id[:128]
+    return uuid4().hex
+
+
+@app.middleware("http")
+async def request_context_middleware(request: Request, call_next):
+    request_id = request_id_from_header(request.headers.get(REQUEST_ID_HEADER))
+    token = set_request_id(request_id)
+    started_at = perf_counter()
+
+    try:
+        response = await call_next(request)
+    except Exception:
+        duration_ms = round((perf_counter() - started_at) * 1000, 2)
+        logger.exception(
+            "request failed",
+            extra={
+                "http": {
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": 500,
+                    "duration_ms": duration_ms,
+                    "client_ip": request.client.host if request.client else None,
+                }
+            },
+        )
+        raise
+    else:
+        duration_ms = round((perf_counter() - started_at) * 1000, 2)
+        response.headers[REQUEST_ID_HEADER] = request_id
+        logger.info(
+            "request completed",
+            extra={
+                "http": {
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": response.status_code,
+                    "duration_ms": duration_ms,
+                    "client_ip": request.client.host if request.client else None,
+                }
+            },
+        )
+        return response
+    finally:
+        reset_request_id(token)
 
 
 def calculate_mttr_minutes(incident: Incident) -> float | None:
@@ -133,6 +194,14 @@ def create_service(payload: ServiceCreate, db: Session = Depends(get_db)) -> Ser
     db.add(service)
     db.commit()
     db.refresh(service)
+    logger.info(
+        "service created",
+        extra={
+            "event": "service.created",
+            "service_id": service.id,
+            "service_name": service.name,
+        },
+    )
     return service
 
 
@@ -145,6 +214,14 @@ def update_service(
         setattr(service, field, value)
     db.commit()
     db.refresh(service)
+    logger.info(
+        "service updated",
+        extra={
+            "event": "service.updated",
+            "service_id": service.id,
+            "service_name": service.name,
+        },
+    )
     return service
 
 
@@ -156,6 +233,15 @@ def update_service_status(
     service.status = payload.status
     db.commit()
     db.refresh(service)
+    logger.info(
+        "service status updated",
+        extra={
+            "event": "service.status_updated",
+            "service_id": service.id,
+            "service_name": service.name,
+            "service_status": service.status,
+        },
+    )
     return service
 
 
@@ -180,6 +266,16 @@ def create_incident(payload: IncidentCreate, db: Session = Depends(get_db)) -> I
     )
     db.commit()
     db.refresh(incident)
+    logger.info(
+        "incident created",
+        extra={
+            "event": "incident.created",
+            "incident_id": incident.id,
+            "service_id": incident.service_id,
+            "incident_status": incident.status,
+            "severity": incident.severity,
+        },
+    )
     return incident_to_read(incident)
 
 
@@ -209,6 +305,15 @@ def add_incident_update(
         )
     )
     db.commit()
+    logger.info(
+        "incident timeline updated",
+        extra={
+            "event": "incident.timeline_updated",
+            "incident_id": incident.id,
+            "service_id": incident.service_id,
+            "incident_status": incident.status,
+        },
+    )
     return get_incident(incident_id, db)
 
 
@@ -227,6 +332,15 @@ def resolve_incident(
         )
     )
     db.commit()
+    logger.info(
+        "incident resolved",
+        extra={
+            "event": "incident.resolved",
+            "incident_id": incident.id,
+            "service_id": incident.service_id,
+            "incident_status": incident.status,
+        },
+    )
     return get_incident(incident_id, db)
 
 
@@ -243,6 +357,17 @@ def create_deployment(payload: DeploymentCreate, db: Session = Depends(get_db)) 
     db.add(deployment)
     db.commit()
     db.refresh(deployment)
+    logger.info(
+        "deployment registered",
+        extra={
+            "event": "deployment.registered",
+            "deployment_id": deployment.id,
+            "service_id": deployment.service_id,
+            "deployment_status": deployment.status,
+            "version": deployment.version,
+            "commit_sha": deployment.commit_sha,
+        },
+    )
     return deployment
 
 
@@ -273,6 +398,31 @@ def get_metrics(db: Session = Depends(get_db)) -> MetricsRead:
     failed_deployments = db.scalar(
         select(func.count()).select_from(Deployment).where(Deployment.status == "failed")
     )
+    reliability = []
+    for service in services:
+        sli_uptime = 100.0 if service.status in {"healthy", "maintenance"} else 0.0
+        error_budget = round(100 - service.slo_target, 2)
+        burn = round(max(0.0, service.slo_target - sli_uptime), 2)
+        remaining = round(max(0.0, error_budget - burn), 2)
+        if remaining <= 0 and burn > 0:
+            budget_status = "exhausted"
+        elif error_budget > 0 and remaining <= error_budget * 0.25:
+            budget_status = "at_risk"
+        else:
+            budget_status = "healthy"
+        reliability.append(
+            {
+                "service_id": service.id,
+                "name": service.name,
+                "status": service.status,
+                "slo_target": service.slo_target,
+                "sli_uptime_percent": sli_uptime,
+                "error_budget_percent": error_budget,
+                "error_budget_remaining_percent": remaining,
+                "error_budget_burn_percent": burn,
+                "error_budget_status": budget_status,
+            }
+        )
 
     return MetricsRead(
         total_services=len(services),
@@ -286,4 +436,16 @@ def get_metrics(db: Session = Depends(get_db)) -> MetricsRead:
         last_deployment=deployments[0] if deployments else None,
         current_platform_status=platform_status,
         open_incidents_by_severity=open_by_severity,
+        services_meeting_slo=len(
+            [service for service in reliability if service["sli_uptime_percent"] >= service["slo_target"]]
+        ),
+        services_breaching_slo=len(
+            [service for service in reliability if service["sli_uptime_percent"] < service["slo_target"]]
+        ),
+        average_sli_uptime_percent=round(
+            sum(service["sli_uptime_percent"] for service in reliability) / len(reliability), 2
+        )
+        if reliability
+        else None,
+        service_reliability=reliability,
     )

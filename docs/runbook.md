@@ -116,6 +116,15 @@ Expected:
 - Backend replicas increase
 - Backend replicas later scale back down
 
+## RDS Connectivity And Secret Rotation
+
+Use the dedicated database runbook when backend pods cannot connect to RDS, the
+Helm migration Job fails, or database credentials need rotation:
+
+```bash
+docs/rds-connectivity-secret-rotation-runbook.md
+```
+
 ## CloudWatch Logs Validation
 
 Use:

@@ -15,6 +15,39 @@ Do not run the AWS commands until the short-lived demo environment is created.
 
 The Amazon CloudWatch Observability EKS add-on installs CloudWatch Agent and Fluent Bit. AWS documents that it can collect infrastructure metrics, application telemetry, and container logs, and that container logs are collected by default.
 
+Backend application logs are emitted as JSON by default. Each request log includes:
+
+- `service`
+- `environment`
+- `level`
+- `message`
+- `request_id`
+- `http.method`
+- `http.path`
+- `http.status_code`
+- `http.duration_ms`
+- `http.client_ip`
+
+State-changing API actions also emit event logs with resource context where applicable:
+
+- `event`
+- `service_id`
+- `incident_id`
+- `deployment_id`
+- `incident_status`
+- `deployment_status`
+- `severity`
+- `commit_sha`
+
+The API accepts an incoming `X-Request-ID` header and echoes the same value in the response. If the caller does not send one, the backend generates a request ID and includes it in both the response header and request log.
+
+Runtime knobs:
+
+```text
+LOG_LEVEL=INFO
+LOG_FORMAT=json
+```
+
 Install instructions are in:
 
 ```text
@@ -56,7 +89,7 @@ Generate backend log traffic:
 ```bash
 ALB_URL="http://$(kubectl get ingress -n cloudops cloudops-cloudops-sre-platform -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
 
-curl "$ALB_URL/api/health"
+curl -i -H "X-Request-ID: demo-health-001" "$ALB_URL/api/health"
 curl "$ALB_URL/api/metrics"
 curl "$ALB_URL/api/demo/cpu?duration_ms=100"
 ```
@@ -64,7 +97,7 @@ curl "$ALB_URL/api/demo/cpu?duration_ms=100"
 Capture screenshots:
 
 - CloudWatch log group list
-- Backend pod log events
+- Backend pod log events showing JSON request logs and `request_id`
 - Frontend/Nginx log events if visible
 
 ## Optional Prometheus And Grafana

@@ -30,7 +30,7 @@ AWS run notes and screenshots:
 Working project components:
 
 - FastAPI backend and React frontend
-- PostgreSQL schema and seeded data
+- Alembic-versioned PostgreSQL schema and seeded data
 - Local Docker Compose stack
 - Production-style Nginx Docker stack
 - Backend API tests
@@ -81,13 +81,16 @@ More detail: [docs/architecture.md](docs/architecture.md)
 - Incident workflow with severity, status, timeline updates, and resolution
 - Deployment history with version, commit SHA, status, and deployment time
 - Metrics endpoint for reliability dashboard summaries
+- Frontend loading, retry, and API failure states for operational views
+- SLO and error budget tracking in reliability metrics
+- Structured JSON backend logs with `X-Request-ID` request correlation
 - Bounded CPU demo endpoint for HPA testing: `/demo/cpu`
 
 ## Repository Structure
 
 ```text
 .
-├── backend/                 # FastAPI, SQLAlchemy, tests, Dockerfile
+├── backend/                 # FastAPI, SQLAlchemy, Alembic, tests, Dockerfile
 ├── frontend/                # React, Vite, Nginx production image
 ├── infra/                   # Terraform AWS foundation
 ├── charts/                  # Helm chart for EKS deployment
@@ -111,6 +114,8 @@ docker compose up -d --build
 docker compose ps
 ```
 
+The backend container runs `alembic upgrade head` before starting Uvicorn.
+
 Expected:
 
 - PostgreSQL: `localhost:5432`
@@ -124,6 +129,13 @@ curl http://localhost:8000/health
 curl http://localhost:8000/metrics
 ```
 
+Run migrations manually when developing outside Docker:
+
+```bash
+cd backend
+alembic upgrade head
+```
+
 Run tests and frontend build:
 
 ```bash
@@ -134,7 +146,7 @@ docker compose exec frontend npm run build
 Expected:
 
 ```text
-5 passed
+9 passed
 ✓ built
 ```
 
@@ -233,8 +245,8 @@ Default CI checks:
 - Backend tests
 - Frontend production build
 - Docker image builds
-- Helm lint and render
-- Terraform validate
+- Helm lint, render, and Kubernetes schema validation
+- Terraform validate, cost guardrails, and Checkov Terraform scan
 
 AWS deployment is manual only and requires:
 
@@ -300,6 +312,7 @@ The project was deployed to Amazon EKS for a short-lived run. The screenshots be
 - Run checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)
 - Run summary: [docs/aws-demo-run.md](docs/aws-demo-run.md)
 - Validation checklist: [docs/demo-validation-checklist.md](docs/demo-validation-checklist.md)
+- RDS connectivity and secret rotation runbook: [docs/rds-connectivity-secret-rotation-runbook.md](docs/rds-connectivity-secret-rotation-runbook.md)
 - Cost control guide: [docs/cost-control.md](docs/cost-control.md)
 - Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots/aws-demo-2026-06-06/)
 
@@ -314,6 +327,7 @@ The project was deployed to Amazon EKS for a short-lived run. The screenshots be
 - [HPA Demo](docs/hpa-demo.md)
 - [Observability](docs/observability.md)
 - [Runbook](docs/runbook.md)
+- [RDS Connectivity And Secret Rotation](docs/rds-connectivity-secret-rotation-runbook.md)
 - [Cost Control](docs/cost-control.md)
 - [Validation Checklist](docs/demo-validation-checklist.md)
 - [Project Summary](docs/project-summary.md)

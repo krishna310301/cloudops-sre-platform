@@ -22,6 +22,9 @@ services:
       APP_ENV: production-local
       DATABASE_URL: postgresql+psycopg://cloudops:cloudops@db:5432/cloudops
       CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
+    command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
     depends_on:
       db:
         condition: service_healthy

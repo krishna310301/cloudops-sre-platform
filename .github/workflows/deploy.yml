@@ -7,6 +7,7 @@ on:
       - "frontend/**"
       - "charts/**"
       - "infra/**"
+      - "scripts/terraform_cost_guardrails.py"
       - "docker-compose*.yml"
       - ".github/workflows/deploy.yml"
   push:
@@ -17,6 +18,7 @@ on:
       - "frontend/**"
       - "charts/**"
       - "infra/**"
+      - "scripts/terraform_cost_guardrails.py"
       - "docker-compose*.yml"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
@@ -52,6 +54,7 @@ env:
   HELM_RELEASE: cloudops
   K8S_NAMESPACE: cloudops
   CHART_PATH: charts/cloudops-sre-platform
+  KUBECONFORM_VERSION: v0.6.7
 
 jobs:
   backend-tests:
@@ -120,7 +123,7 @@ jobs:
         run: docker build --target production --build-arg VITE_API_BASE_URL=/api -t "${PROJECT_NAME}-frontend:${GITHUB_SHA}" ./frontend
 
   helm-validate:
-    name: Helm Lint And Render
+    name: Helm And Kubernetes Manifest Validation
     runs-on: ubuntu-latest
 
     steps:
@@ -136,7 +139,21 @@ jobs:
         run: helm lint "${CHART_PATH}" -f "${CHART_PATH}/values-aws-example.yaml"
 
       - name: Helm render AWS example
-        run: helm template "${HELM_RELEASE}" "${CHART_PATH}" -f "${CHART_PATH}/values-aws-example.yaml" --namespace "${K8S_NAMESPACE}"
+        run: |
+          helm template "${HELM_RELEASE}" "${CHART_PATH}" \
+            -f "${CHART_PATH}/values-aws-example.yaml" \
+            --namespace "${K8S_NAMESPACE}" \
+            > rendered-manifests.yaml
+
+      - name: Validate rendered Kubernetes manifests
+        run: |
+          docker run --rm \
+            -v "${PWD}:/workspace" \
+            "ghcr.io/yannh/kubeconform:${KUBECONFORM_VERSION}" \
+            -strict \
+            -summary \
+            -ignore-missing-schemas \
+            /workspace/rendered-manifests.yaml
 
   terraform-validate:
     name: Terraform Validate
@@ -163,6 +180,21 @@ jobs:
 
       - name: Terraform validate
         run: terraform validate
+
+      - name: Terraform cost and security guardrails
+        working-directory: .
+        run: python scripts/terraform_cost_guardrails.py
+
+      - name: Checkov Terraform security scan
+        working-directory: .
+        run: |
+          docker run --rm \
+            -v "${PWD}:/workspace" \
+            bridgecrew/checkov:3.2.403 \
+            --directory /workspace/infra \
+            --framework terraform \
+            --compact \
+            --soft-fail
 
   publish-images:
     name: Publish Images To ECR

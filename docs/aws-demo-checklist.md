@@ -129,6 +129,7 @@ Use:
 docs/demo-validation-checklist.md
 docs/hpa-demo.md
 docs/observability.md
+docs/rds-connectivity-secret-rotation-runbook.md
 ```
 
 Minimum evidence set:

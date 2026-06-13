@@ -47,6 +47,16 @@ spec:
                 configMapKeyRef:
                   name: {{ include "cloudops-sre-platform.fullname" . }}-backend-config
                   key: CORS_ORIGINS
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "cloudops-sre-platform.fullname" . }}-backend-config
+                  key: LOG_LEVEL
+            - name: LOG_FORMAT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "cloudops-sre-platform.fullname" . }}-backend-config
+                  key: LOG_FORMAT
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

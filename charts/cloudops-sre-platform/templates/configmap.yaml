@@ -8,3 +8,5 @@ metadata:
 data:
   APP_ENV: {{ .Values.backend.env.appEnv | quote }}
   CORS_ORIGINS: {{ .Values.backend.env.corsOrigins | quote }}
+  LOG_LEVEL: {{ .Values.backend.env.logLevel | quote }}
+  LOG_FORMAT: {{ .Values.backend.env.logFormat | quote }}

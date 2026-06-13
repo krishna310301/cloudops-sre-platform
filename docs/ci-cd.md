@@ -46,10 +46,19 @@ Default jobs:
 - Frontend build with `npm run build`
 - Backend Docker image build
 - Frontend production Docker image build
-- Helm lint and template render
-- Terraform validate
+- Helm lint, template render, and kubeconform Kubernetes schema validation
+- Terraform validate, cost guardrails, and Checkov Terraform security scan
 
 These default jobs do not push images, deploy to EKS, or create AWS resources.
+
+The Kubernetes manifest validation step renders the Helm chart with
+`charts/cloudops-sre-platform/values-aws-example.yaml` and validates the output
+with kubeconform in strict mode. This catches invalid Kubernetes API versions and
+missing required fields before a manual AWS deployment.
+
+The Terraform jobs run a repository cost/security guardrail script that fails
+when demo resource sizes, retention, cleanup, or RDS exposure assumptions drift.
+They also run Checkov against `infra/` as an advisory Terraform security scan.
 
 ## Manual AWS Deployment Gate
 

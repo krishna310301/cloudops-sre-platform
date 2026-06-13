@@ -10,6 +10,8 @@ backend:
   env:
     appEnv: "aws-demo"
     corsOrigins: "https://REPLACE_WITH_ALB_DNS_NAME"
+    logLevel: "INFO"
+    logFormat: "json"
 
   database:
     existingSecret: "cloudops-database"

@@ -76,8 +76,11 @@ function App() {
   const [selectedIncidentId, setSelectedIncidentId] = useState(null);
   const [incidentDetail, setIncidentDetail] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [actionPending, setActionPending] = useState("");
 
   const [serviceForm, setServiceForm] = useState(emptyService);
   const [incidentForm, setIncidentForm] = useState(emptyIncident);
@@ -95,9 +98,13 @@ function App() {
   const selectedIncident =
     incidentDetail || incidents.find((incident) => incident.id === selectedIncidentId);
 
-  const refreshAll = useCallback(async () => {
+  const refreshAll = useCallback(async ({ initial = false } = {}) => {
     setError("");
-    setLoading(true);
+    if (initial) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
     try {
       const [nextMetrics, nextServices, nextIncidents, nextDeployments] =
         await Promise.all([
@@ -110,18 +117,18 @@ function App() {
       setServices(nextServices);
       setIncidents(nextIncidents);
       setDeployments(nextDeployments);
-      if (!selectedIncidentId && nextIncidents.length > 0) {
-        setSelectedIncidentId(nextIncidents[0].id);
-      }
+      setSelectedIncidentId((current) => current || nextIncidents[0]?.id || null);
+      setHasLoaded(true);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Unable to load platform data");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [selectedIncidentId]);
+  }, []);
 
   useEffect(() => {
-    refreshAll();
+    refreshAll({ initial: true });
   }, [refreshAll]);
 
   useEffect(() => {
@@ -132,65 +139,90 @@ function App() {
       .catch((err) => setError(err.message));
   }, [selectedIncidentId]);
 
+  async function runAction(actionKey, action) {
+    setError("");
+    setNotice("");
+    setActionPending(actionKey);
+    try {
+      await action();
+    } catch (err) {
+      setError(err.message || "Action failed");
+    } finally {
+      setActionPending("");
+    }
+  }
+
   async function handleCreateService(event) {
     event.preventDefault();
-    const payload = {
-      ...serviceForm,
-      slo_target: Number(serviceForm.slo_target),
-      service_url: serviceForm.service_url || null,
-    };
-    await api.createService(payload);
-    setServiceForm(emptyService);
-    setNotice("Service created");
-    await refreshAll();
+    await runAction("create-service", async () => {
+      const payload = {
+        ...serviceForm,
+        slo_target: Number(serviceForm.slo_target),
+        service_url: serviceForm.service_url || null,
+      };
+      await api.createService(payload);
+      setServiceForm(emptyService);
+      setNotice("Service created");
+      await refreshAll();
+    });
   }
 
   async function handleServiceStatus(serviceId, status) {
-    await api.updateServiceStatus(serviceId, status);
-    setNotice("Service status updated");
-    await refreshAll();
+    await runAction(`service-status-${serviceId}`, async () => {
+      await api.updateServiceStatus(serviceId, status);
+      setNotice("Service status updated");
+      await refreshAll();
+    });
   }
 
   async function handleCreateIncident(event) {
     event.preventDefault();
-    await api.createIncident({
-      ...incidentForm,
-      service_id: Number(incidentForm.service_id),
+    await runAction("create-incident", async () => {
+      await api.createIncident({
+        ...incidentForm,
+        service_id: Number(incidentForm.service_id),
+      });
+      setIncidentForm(emptyIncident);
+      setNotice("Incident created");
+      await refreshAll();
     });
-    setIncidentForm(emptyIncident);
-    setNotice("Incident created");
-    await refreshAll();
   }
 
   async function handleCreateDeployment(event) {
     event.preventDefault();
-    await api.createDeployment({
-      ...deploymentForm,
-      service_id: Number(deploymentForm.service_id),
+    await runAction("create-deployment", async () => {
+      await api.createDeployment({
+        ...deploymentForm,
+        service_id: Number(deploymentForm.service_id),
+      });
+      setDeploymentForm(emptyDeployment);
+      setNotice("Deployment registered");
+      await refreshAll();
     });
-    setDeploymentForm(emptyDeployment);
-    setNotice("Deployment registered");
-    await refreshAll();
   }
 
   async function handleTimelineUpdate(event) {
     event.preventDefault();
     if (!selectedIncidentId) return;
-    await api.addIncidentUpdate(selectedIncidentId, timelineForm);
-    setTimelineForm({ message: "", status: timelineForm.status });
-    setNotice("Timeline updated");
-    await refreshAll();
-    setIncidentDetail(await api.getIncident(selectedIncidentId));
+    await runAction("timeline-update", async () => {
+      await api.addIncidentUpdate(selectedIncidentId, timelineForm);
+      setTimelineForm({ message: "", status: timelineForm.status });
+      setNotice("Timeline updated");
+      await refreshAll();
+      setIncidentDetail(await api.getIncident(selectedIncidentId));
+    });
   }
 
   async function handleResolveIncident() {
     if (!selectedIncidentId) return;
-    await api.resolveIncident(selectedIncidentId, {
-      message: "Incident resolved and service restored.",
+    await runAction("resolve-incident", async () => {
+      await api.resolveIncident(selectedIncidentId, {
+        message: "Incident resolved and service restored.",
+      });
+      setNotice("Incident resolved");
+      await refreshAll();
+      setIncidentDetail(await api.getIncident(selectedIncidentId));
     });
-    setNotice("Incident resolved");
-    await refreshAll();
-    setIncidentDetail(await api.getIncident(selectedIncidentId));
   }
 
   const uptimePercent =
@@ -240,17 +272,28 @@ function App() {
                 {metrics.current_platform_status}
               </span>
             )}
-            <button className="icon-button" onClick={refreshAll} type="button" title="Refresh data">
-              <RefreshCw size={18} />
+            {refreshing && <span className="refresh-state">Refreshing</span>}
+            <button
+              className="icon-button"
+              disabled={loading || refreshing}
+              onClick={() => refreshAll()}
+              type="button"
+              title="Refresh data"
+            >
+              <RefreshCw className={refreshing ? "spin" : ""} size={18} />
             </button>
           </div>
         </header>
 
-        {error && <div className="alert error">{error}</div>}
+        {error && hasLoaded && <ErrorBanner message={error} onRetry={() => refreshAll()} />}
         {notice && <div className="alert success">{notice}</div>}
-        {loading && <div className="loading">Loading platform data...</div>}
 
-        {!loading && activeView === "dashboard" && (
+        {loading && <ViewSkeleton view={activeView} />}
+        {!loading && !hasLoaded && (
+          <RetryPanel message={error || "Unable to load platform data"} onRetry={() => refreshAll({ initial: true })} />
+        )}
+
+        {!loading && hasLoaded && activeView === "dashboard" && (
           <Dashboard
             deployments={deployments}
             incidents={incidents}
@@ -262,8 +305,9 @@ function App() {
           />
         )}
 
-        {!loading && activeView === "services" && (
+        {!loading && hasLoaded && activeView === "services" && (
           <Services
+            busy={actionPending}
             form={serviceForm}
             onChange={setServiceForm}
             onSubmit={handleCreateService}
@@ -272,8 +316,9 @@ function App() {
           />
         )}
 
-        {!loading && activeView === "incidents" && (
+        {!loading && hasLoaded && activeView === "incidents" && (
           <Incidents
+            busy={actionPending === "create-incident"}
             form={incidentForm}
             incidents={incidents}
             onChange={setIncidentForm}
@@ -285,8 +330,9 @@ function App() {
           />
         )}
 
-        {!loading && activeView === "incident-detail" && (
+        {!loading && hasLoaded && activeView === "incident-detail" && (
           <IncidentDetail
+            busy={actionPending}
             detail={selectedIncident}
             form={timelineForm}
             incidents={incidents}
@@ -299,8 +345,9 @@ function App() {
           />
         )}
 
-        {!loading && activeView === "deployments" && (
+        {!loading && hasLoaded && activeView === "deployments" && (
           <Deployments
+            busy={actionPending === "create-deployment"}
             deployments={deployments}
             form={deploymentForm}
             onChange={setDeploymentForm}
@@ -310,10 +357,61 @@ function App() {
           />
         )}
 
-        {!loading && activeView === "metrics" && (
+        {!loading && hasLoaded && activeView === "metrics" && (
           <Metrics metrics={metrics} uptimePercent={uptimePercent} />
         )}
       </main>
+    </div>
+  );
+}
+
+function ErrorBanner({ message, onRetry }) {
+  return (
+    <div className="alert error action-alert">
+      <span>{message}</span>
+      <button className="table-button" onClick={onRetry} type="button">
+        <RefreshCw size={15} />
+        Retry
+      </button>
+    </div>
+  );
+}
+
+function RetryPanel({ message, onRetry }) {
+  return (
+    <section className="panel state-panel">
+      <div className="state-icon error-state">
+        <AlertTriangle size={22} />
+      </div>
+      <h2>Data unavailable</h2>
+      <p>{message}</p>
+      <button className="primary-button" onClick={onRetry} type="button">
+        <RefreshCw size={17} />
+        Retry
+      </button>
+    </section>
+  );
+}
+
+function ViewSkeleton({ view }) {
+  const rows = view === "dashboard" || view === "metrics" ? 4 : 6;
+
+  return (
+    <div className="stack" aria-busy="true">
+      <section className="metrics-grid">
+        {[0, 1, 2, 3].map((item) => (
+          <div className="metric-card skeleton-card" key={item}>
+            <span className="skeleton skeleton-icon" />
+            <span className="skeleton skeleton-line short" />
+            <span className="skeleton skeleton-line" />
+          </div>
+        ))}
+      </section>
+      <section className="panel skeleton-panel">
+        {Array.from({ length: rows }).map((_, index) => (
+          <span className="skeleton skeleton-row" key={index} />
+        ))}
+      </section>
     </div>
   );
 }
@@ -481,7 +579,9 @@ function Field({ label, children }) {
   );
 }
 
-function Services({ form, onChange, onSubmit, onStatusChange, services }) {
+function Services({ busy, form, onChange, onSubmit, onStatusChange, services }) {
+  const creating = busy === "create-service";
+
   return (
     <div className="stack">
       <section className="panel">
@@ -546,9 +646,9 @@ function Services({ form, onChange, onSubmit, onStatusChange, services }) {
               onChange={(event) => onChange({ ...form, service_url: event.target.value })}
             />
           </Field>
-          <button className="primary-button" type="submit">
+          <button className="primary-button" disabled={creating} type="submit">
             <Plus size={17} />
-            Create
+            {creating ? "Creating" : "Create"}
           </button>
         </form>
       </section>
@@ -575,6 +675,7 @@ function Services({ form, onChange, onSubmit, onStatusChange, services }) {
                 <td>
                   <select
                     className="compact-select"
+                    disabled={busy === `service-status-${service.id}`}
                     value={service.status}
                     onChange={(event) => onStatusChange(service.id, event.target.value)}
                   >
@@ -596,6 +697,7 @@ function Services({ form, onChange, onSubmit, onStatusChange, services }) {
 }
 
 function Incidents({
+  busy,
   form,
   incidents,
   onChange,
@@ -652,9 +754,9 @@ function Incidents({
               <option>monitoring</option>
             </select>
           </Field>
-          <button className="primary-button" type="submit">
+          <button className="primary-button" disabled={busy} type="submit">
             <Plus size={17} />
-            Open
+            {busy ? "Opening" : "Open"}
           </button>
         </form>
       </section>
@@ -708,6 +810,7 @@ function Incidents({
 }
 
 function IncidentDetail({
+  busy,
   detail,
   form,
   incidents,
@@ -808,18 +911,18 @@ function IncidentDetail({
               />
             </Field>
             <div className="button-row">
-              <button className="primary-button" type="submit">
+              <button className="primary-button" disabled={busy === "timeline-update"} type="submit">
                 <Plus size={17} />
-                Add
+                {busy === "timeline-update" ? "Adding" : "Add"}
               </button>
               <button
                 className="secondary-button"
-                disabled={detail.status === "resolved"}
+                disabled={detail.status === "resolved" || busy === "resolve-incident"}
                 onClick={onResolve}
                 type="button"
               >
                 <CheckCircle2 size={17} />
-                Resolve
+                {busy === "resolve-incident" ? "Resolving" : "Resolve"}
               </button>
             </div>
           </form>
@@ -829,7 +932,7 @@ function IncidentDetail({
   );
 }
 
-function Deployments({ deployments, form, onChange, onSubmit, serviceById, services }) {
+function Deployments({ busy, deployments, form, onChange, onSubmit, serviceById, services }) {
   return (
     <div className="stack">
       <section className="panel">
@@ -875,9 +978,9 @@ function Deployments({ deployments, form, onChange, onSubmit, serviceById, servi
               <option>in_progress</option>
             </select>
           </Field>
-          <button className="primary-button" type="submit">
+          <button className="primary-button" disabled={busy} type="submit">
             <Plus size={17} />
-            Register
+            {busy ? "Registering" : "Register"}
           </button>
         </form>
       </section>
@@ -918,11 +1021,28 @@ function Deployments({ deployments, form, onChange, onSubmit, serviceById, servi
 function Metrics({ metrics, uptimePercent }) {
   const severities = metrics?.open_incidents_by_severity || {};
   const maxSeverity = Math.max(1, ...Object.values(severities));
+  const serviceReliability = metrics?.service_reliability || [];
 
   return (
     <div className="stack">
       <section className="metrics-grid">
         <MetricCard icon={CheckCircle2} label="Uptime proxy" value={`${uptimePercent}%`} />
+        <MetricCard
+          icon={Activity}
+          label="Avg SLI"
+          value={
+            metrics?.average_sli_uptime_percent !== null &&
+            metrics?.average_sli_uptime_percent !== undefined
+              ? `${metrics.average_sli_uptime_percent}%`
+              : "No data"
+          }
+        />
+        <MetricCard
+          icon={Server}
+          label="SLO breaches"
+          tone={metrics?.services_breaching_slo ? "bad" : "good"}
+          value={metrics?.services_breaching_slo ?? 0}
+        />
         <MetricCard
           icon={Clock}
           label="MTTR"
@@ -947,6 +1067,39 @@ function Metrics({ metrics, uptimePercent }) {
             </div>
           ))}
         </div>
+      </section>
+      <section className="panel">
+        <PanelHeader title="SLO And Error Budget" />
+        <table>
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Status</th>
+              <th>SLI</th>
+              <th>SLO</th>
+              <th>Budget left</th>
+              <th>Budget status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {serviceReliability.map((service) => (
+              <tr key={service.service_id}>
+                <td>{service.name}</td>
+                <td>
+                  <span className={statusClass(service.status)}>{service.status}</span>
+                </td>
+                <td>{service.sli_uptime_percent}%</td>
+                <td>{service.slo_target}%</td>
+                <td>{service.error_budget_remaining_percent}%</td>
+                <td>
+                  <span className={statusClass(service.error_budget_status)}>
+                    {service.error_budget_status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
     </div>
   );

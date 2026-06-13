@@ -32,6 +32,12 @@ button {
   cursor: pointer;
 }
 
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
@@ -190,6 +196,15 @@ h2 {
 .table-button {
   min-height: 32px;
   white-space: nowrap;
+}
+
+.refresh-state {
+  color: #9ba8ad;
+  font-size: 0.82rem;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
 }
 
 .stack {
@@ -540,10 +555,106 @@ textarea {
   color: #b8f2d2;
 }
 
+.action-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.action-alert .table-button {
+  border-color: rgba(255, 111, 97, 0.35);
+  flex: 0 0 auto;
+}
+
 .loading {
   border: 1px solid #334044;
   background: #171c1f;
   color: #aeb8bc;
+}
+
+.state-panel {
+  display: grid;
+  min-height: 360px;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.state-panel p {
+  max-width: 560px;
+  margin-bottom: 4px;
+  color: #aeb8bc;
+}
+
+.state-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #242d31;
+}
+
+.error-state {
+  color: #ff8b7e;
+}
+
+.skeleton-panel {
+  display: grid;
+  gap: 12px;
+  min-height: 320px;
+}
+
+.skeleton-card {
+  display: grid;
+  align-content: start;
+}
+
+.skeleton {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #242d31 0%, #303b40 45%, #242d31 90%);
+  background-size: 220% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+
+.skeleton-icon {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 14px;
+}
+
+.skeleton-line {
+  width: 72%;
+  height: 16px;
+  margin-top: 10px;
+}
+
+.skeleton-line.short {
+  width: 42%;
+}
+
+.skeleton-row {
+  width: 100%;
+  height: 42px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 1180px) {
@@ -602,5 +713,10 @@ textarea {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+  }
+
+  .action-alert {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

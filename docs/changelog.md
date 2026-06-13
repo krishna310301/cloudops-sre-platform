@@ -1,5 +1,37 @@
 # Changelog
 
+## Unreleased - SRE Hardening Pass
+
+Release date: pending
+
+This update strengthens the project as an SRE/platform portfolio system by
+turning the AWS demo baseline into a more operationally mature codebase.
+
+### Added
+
+- Structured JSON backend logging with `X-Request-ID` request correlation,
+  request latency/status fields, and service/incident/deployment event context
+- Alembic migration scaffolding, initial schema migration, Docker Compose
+  migration startup, and a Helm pre-install/pre-upgrade migration Job
+- Kubernetes manifest validation in CI with Helm render plus kubeconform
+- Terraform cost/security guardrail checks and advisory Checkov scans in CI
+- SLO and error budget metrics in the API and frontend Metrics view
+- Frontend loading, retry, failed-refresh, and pending-action states
+- RDS connectivity and secret rotation runbook for AWS demo operations
+
+### Validated
+
+- Backend API tests: `9 passed`
+- Frontend production build
+- Helm lint and render for AWS values
+- Workflow YAML parsing
+- Terraform formatting and cost/security guardrail script
+
+### Notes
+
+- External Secrets/IRSA, release promotion, and optional Grafana screenshots
+  remain future hardening items.
+
 ## v1.0.0 - AWS Demo Baseline
 
 Release date: June 8, 2026

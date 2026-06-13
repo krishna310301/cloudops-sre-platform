@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - "infra/**"
+      - "scripts/terraform_cost_guardrails.py"
       - ".github/workflows/terraform-validate.yml"
   push:
     branches:
       - main
     paths:
       - "infra/**"
+      - "scripts/terraform_cost_guardrails.py"
       - ".github/workflows/terraform-validate.yml"
   workflow_dispatch:
 
@@ -42,3 +44,18 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Terraform Cost And Security Guardrails
+        working-directory: .
+        run: python scripts/terraform_cost_guardrails.py
+
+      - name: Checkov Terraform Security Scan
+        working-directory: .
+        run: |
+          docker run --rm \
+            -v "${PWD}:/workspace" \
+            bridgecrew/checkov:3.2.403 \
+            --directory /workspace/infra \
+            --framework terraform \
+            --compact \
+            --soft-fail
