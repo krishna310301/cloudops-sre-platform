@@ -126,7 +126,7 @@ kubectl rollout status deployment/cloudops-cloudops-sre-platform-frontend -n clo
 Use:
 
 ```text
-docs/evidence.md
+docs/demo-validation-checklist.md
 docs/hpa-demo.md
 docs/observability.md
 ```

@@ -28,7 +28,7 @@ Actions:
 4. If backend pods are unhealthy, inspect readiness/liveness probe failures.
 5. If database errors appear, check RDS status and security group connectivity.
 
-Evidence to capture:
+Validation notes to capture:
 
 - `kubectl get pods`
 - backend logs
@@ -172,7 +172,7 @@ Verify in AWS:
 - EBS volumes gone
 - Elastic IP released
 
-Evidence to capture:
+Validation notes to capture:
 
 - Terraform destroy confirmation
 - AWS console or CLI showing no EKS/RDS/ALB/NAT resources remain

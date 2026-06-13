@@ -1,6 +1,6 @@
-# Evidence Checklist
+# Demo Validation Checklist
 
-Use this checklist during the short AWS demo deployment. Capture evidence before destroying the environment.
+Use this checklist during the short AWS deployment. Capture screenshots and notes before destroying the environment.
 
 Recommended folder:
 
@@ -30,7 +30,7 @@ Suggested naming:
 15-terraform-destroy-output.png
 ```
 
-## Application Evidence
+## Application Screenshots
 
 - Live app dashboard on ALB URL
 - Services page with service catalog
@@ -39,7 +39,7 @@ Suggested naming:
 - Deployment history page
 - Metrics page if used
 
-## AWS Evidence
+## AWS Screenshots
 
 ```bash
 terraform -chdir=infra output
@@ -56,7 +56,7 @@ Capture:
 - ALB DNS name
 - Secrets Manager database secret
 
-## Kubernetes Evidence
+## Kubernetes Screenshots
 
 ```bash
 kubectl get nodes -o wide
@@ -73,7 +73,7 @@ Capture:
 - Ingress with ALB hostname
 - HPA status
 
-## CI/CD Evidence
+## CI/CD Screenshots
 
 Capture:
 
@@ -85,7 +85,7 @@ Capture:
 - Terraform validate job
 - Manual deploy job if used
 
-## Observability Evidence
+## Observability Screenshots
 
 CloudWatch:
 
@@ -111,7 +111,7 @@ Optional Grafana capture:
 - HPA current replicas
 - Pod count during scale-out
 
-## Cleanup Evidence
+## Cleanup Record
 
 After `terraform destroy`, capture:
 

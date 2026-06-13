@@ -139,7 +139,7 @@ Capture screenshots:
 - Backend logs
 - Recent Kubernetes events
 
-## Evidence Checklist
+## Validation Checklist
 
 - CloudWatch application log group
 - Backend logs in CloudWatch

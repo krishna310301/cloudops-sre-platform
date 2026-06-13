@@ -15,7 +15,7 @@ Available galleries:
 Suggested file names are documented in:
 
 ```text
-docs/evidence.md
+docs/demo-validation-checklist.md
 ```
 
 Before committing screenshots:

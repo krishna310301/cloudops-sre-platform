@@ -36,7 +36,7 @@ Task: Build a cloud-native reliability dashboard that maps to real SRE workflows
 
 Action: Implemented FastAPI APIs, React dashboard, PostgreSQL schema, incident timelines, deployment history, and MTTR calculations.
 
-Result: Created a portfolio project that demonstrates production operations concepts beyond a simple CRUD app.
+Result: Created a cloud operations project that demonstrates production operations concepts beyond a simple CRUD app.
 
 ### Kubernetes And Autoscaling
 

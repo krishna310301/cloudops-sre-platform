@@ -108,4 +108,4 @@ The Helm chart renders:
 - Application containers use ClusterIP services inside Kubernetes.
 - ALB is the public entry point.
 - Database URL should be loaded from a Kubernetes Secret, which is populated from AWS Secrets Manager during deployment.
-- AWS deployment is intentionally short-lived for portfolio evidence capture.
+- AWS deployment is intentionally short-lived for validation and cost control.

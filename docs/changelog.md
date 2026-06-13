@@ -4,7 +4,7 @@
 
 Release date: June 8, 2026
 
-This release marks the CloudOps SRE Platform portfolio baseline after the short-lived AWS deployment and same-day teardown.
+This release marks the CloudOps SRE Platform baseline after the short-lived AWS deployment and same-day teardown.
 
 ### Added
 

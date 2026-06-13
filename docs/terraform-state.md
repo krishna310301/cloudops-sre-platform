@@ -2,7 +2,7 @@
 
 CloudOps SRE Platform is designed to support two Terraform state modes:
 
-- **Local state for the short-lived portfolio demo**
+- **Local state for the short-lived AWS run**
 - **Remote S3 state for repeatable team-style deployments**
 
 The completed AWS demo used the local-first workflow because the environment was created, documented, and destroyed the same day. Local state is acceptable for that single-operator demo path as long as state files are never committed.

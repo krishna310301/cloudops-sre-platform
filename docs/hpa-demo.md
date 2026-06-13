@@ -181,7 +181,7 @@ kubectl get hpa -n cloudops
 kubectl get pods -n cloudops
 ```
 
-## 7. Evidence Checklist
+## 7. Validation Checklist
 
 - Baseline HPA before load
 - k6 load test running

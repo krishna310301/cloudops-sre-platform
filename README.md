@@ -10,9 +10,9 @@ This project is my bridge from network operations to cloud operations. I built t
 
 I also took it through a short AWS run on Amazon EKS using Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed infrastructure. I destroyed the environment after capturing the run so the project stays cost-controlled.
 
-Demo notes and screenshots:
+AWS run notes and screenshots:
 
-- [AWS demo run summary](docs/demo-proof.md)
+- [AWS run summary](docs/aws-demo-run.md)
 - [Screenshot gallery](docs/screenshots/aws-demo-2026-06-06/README.md)
 
 ## What This Covers
@@ -23,7 +23,7 @@ Demo notes and screenshots:
 - CI/CD with GitHub Actions for tests, builds, image publishing, Terraform validation, and gated EKS deployment
 - SRE workflows for services, incidents, timelines, deployments, MTTR, HPA scale-out, CloudWatch logs, and observability runbooks
 - Optional Prometheus/Grafana add-on notes for deeper Kubernetes metrics beyond the completed CloudWatch/HPA demo
-- Same-day AWS demo workflow: deploy, capture the run, and destroy before costs linger
+- Same-day AWS run workflow: deploy, capture the run, and destroy before costs linger
 
 ## Project Status
 
@@ -273,9 +273,9 @@ checks: 100%
 
 Full AWS HPA runbook: [docs/hpa-demo.md](docs/hpa-demo.md)
 
-## AWS Demo Day
+## AWS Run and Cleanup
 
-This project is designed for a short-lived AWS demo deployment. To control cost, deploy only when ready to capture screenshots and notes, then destroy the environment the same day.
+This project is designed for short-lived AWS validation runs. To control cost, deploy only when ready to capture screenshots and notes, then destroy the environment the same day.
 
 Cost-bearing resources include:
 
@@ -287,14 +287,7 @@ Cost-bearing resources include:
 
 Before deploying, validate locally, confirm the AWS account and region, review `terraform plan`, and check cost-bearing resources before running `terraform apply`.
 
-Demo checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)  
-Demo run summary: [docs/demo-proof.md](docs/demo-proof.md)  
-Screenshot checklist: [docs/evidence.md](docs/evidence.md)  
-Cost control guide: [docs/cost-control.md](docs/cost-control.md)
-
-## AWS Demo Run
-
-The project was deployed to Amazon EKS for a short-lived demo run. The screenshots below capture the live ALB endpoint, HPA scale-out under k6 load, EKS nodes, and same-day Terraform destroy.
+The project was deployed to Amazon EKS for a short-lived run. The screenshots below capture the live ALB endpoint, HPA scale-out under k6 load, EKS nodes, and same-day Terraform destroy.
 
 | Live dashboard | HPA scale-out |
 |---|---|
@@ -304,7 +297,11 @@ The project was deployed to Amazon EKS for a short-lived demo run. The screensho
 |---|---|
 | ![EKS cluster and worker nodes](docs/screenshots/aws-demo-2026-06-06/07-eks-cluster-nodes.png) | ![Terraform destroy confirmation](docs/screenshots/aws-demo-2026-06-06/14-terraform-destroy-confirmation.png) |
 
-Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots/aws-demo-2026-06-06/)
+- Run checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)
+- Run summary: [docs/aws-demo-run.md](docs/aws-demo-run.md)
+- Validation checklist: [docs/demo-validation-checklist.md](docs/demo-validation-checklist.md)
+- Cost control guide: [docs/cost-control.md](docs/cost-control.md)
+- Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots/aws-demo-2026-06-06/)
 
 ## Documentation
 
@@ -312,10 +309,11 @@ Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots
 - [Architecture](docs/architecture.md)
 - [Deployment](docs/deployment.md)
 - [AWS Add-ons](docs/aws-addons.md)
-- [AWS Demo Run](docs/demo-proof.md)
+- [AWS Run Summary](docs/aws-demo-run.md)
 - [CI/CD](docs/ci-cd.md)
 - [HPA Demo](docs/hpa-demo.md)
 - [Observability](docs/observability.md)
 - [Runbook](docs/runbook.md)
 - [Cost Control](docs/cost-control.md)
-- [Screenshot Checklist](docs/evidence.md)
+- [Validation Checklist](docs/demo-validation-checklist.md)
+- [Project Summary](docs/project-summary.md)
