@@ -1,3 +1,8 @@
+/*
+UI refinement pass:
+- Adjusted visible labels and badge text to sentence case for a calmer operations console.
+- Kept data flow and interactions intact; changes here are presentation-only.
+*/
 import {
   Activity,
   AlertTriangle,
@@ -20,7 +25,7 @@ const views = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "services", label: "Services", icon: Server },
   { id: "incidents", label: "Incidents", icon: ShieldAlert },
-  { id: "incident-detail", label: "Incident Detail", icon: Clock },
+  { id: "incident-detail", label: "Incident detail", icon: Clock },
   { id: "deployments", label: "Deployments", icon: Rocket },
   { id: "metrics", label: "Metrics", icon: BarChart3 },
 ];
@@ -60,7 +65,11 @@ function formatDate(value) {
 }
 
 function statusClass(status) {
-  return `status status-${String(status).replace("_", "-")}`;
+  return `status status-${String(status).replace(/_/g, "-")}`;
+}
+
+function displayLabel(value) {
+  return String(value || "unknown").replace(/_/g, " ");
 }
 
 function severityClass(severity) {
@@ -263,13 +272,13 @@ function App() {
       <main className="content">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Reliability Operations</p>
+            <p className="eyebrow">Reliability operations</p>
             <h1>{views.find((view) => view.id === activeView)?.label}</h1>
           </div>
           <div className="topbar-actions">
             {metrics && (
               <span className={statusClass(metrics.current_platform_status)}>
-                {metrics.current_platform_status}
+                {displayLabel(metrics.current_platform_status)}
               </span>
             )}
             {refreshing && <span className="refresh-state">Refreshing</span>}
@@ -393,6 +402,15 @@ function RetryPanel({ message, onRetry }) {
   );
 }
 
+function EmptyState({ title, message }) {
+  return (
+    <div className="empty-state">
+      <strong>{title}</strong>
+      <p>{message}</p>
+    </div>
+  );
+}
+
 function ViewSkeleton({ view }) {
   const rows = view === "dashboard" || view === "metrics" ? 4 : 6;
 
@@ -465,7 +483,7 @@ function Dashboard({
           value={
             metrics?.average_mttr_minutes
               ? `${metrics.average_mttr_minutes} min`
-              : "No resolved"
+              : "No data"
           }
         />
         <MetricCard
@@ -478,7 +496,7 @@ function Dashboard({
 
       <div className="split-grid">
         <section className="panel">
-          <PanelHeader title="Service Health" />
+          <PanelHeader title="Service health" />
           <table>
             <thead>
               <tr>
@@ -490,47 +508,65 @@ function Dashboard({
               </tr>
             </thead>
             <tbody>
-              {services.map((service) => (
-                <tr key={service.id}>
-                  <td>{service.name}</td>
-                  <td>{service.owner}</td>
-                  <td>
-                    <span className={statusClass(service.status)}>{service.status}</span>
+              {services.length === 0 ? (
+                <tr>
+                  <td className="table-empty" colSpan="5">
+                    <EmptyState
+                      title="No services yet"
+                      message="Create a service to begin tracking ownership, SLOs, and health."
+                    />
                   </td>
-                  <td>{service.slo_target}%</td>
-                  <td>{service.current_version}</td>
                 </tr>
-              ))}
+              ) : (
+                services.map((service) => (
+                  <tr key={service.id}>
+                    <td>{service.name}</td>
+                    <td>{service.owner}</td>
+                    <td>
+                      <span className={statusClass(service.status)}>{displayLabel(service.status)}</span>
+                    </td>
+                    <td>{service.slo_target}%</td>
+                    <td>{service.current_version}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </section>
 
         <section className="panel">
-          <PanelHeader title="Recent Incidents" />
+          <PanelHeader title="Recent incidents" />
           <div className="compact-list">
-            {incidents.slice(0, 5).map((incident) => (
-              <button
-                className="list-row"
-                key={incident.id}
-                onClick={() => {
-                  setSelectedIncidentId(incident.id);
-                  setActiveView("incident-detail");
-                }}
-                type="button"
-              >
-                <span>
-                  <strong>{incident.title}</strong>
-                  <small>{serviceById[incident.service_id]?.name || "Unknown service"}</small>
-                </span>
-                <span className={severityClass(incident.severity)}>{incident.severity}</span>
-              </button>
-            ))}
+            {incidents.length === 0 ? (
+              <EmptyState
+                title="No open incidents"
+                message="Incident activity will appear here when the platform needs attention."
+              />
+            ) : (
+              incidents.slice(0, 5).map((incident) => (
+                <button
+                  className="list-row"
+                  key={incident.id}
+                  onClick={() => {
+                    setSelectedIncidentId(incident.id);
+                    setActiveView("incident-detail");
+                  }}
+                  type="button"
+                >
+                  <span>
+                    <strong>{incident.title}</strong>
+                    <small>{serviceById[incident.service_id]?.name || "Unknown service"}</small>
+                  </span>
+                  <span className={severityClass(incident.severity)}>{incident.severity}</span>
+                </button>
+              ))
+            )}
           </div>
         </section>
       </div>
 
       <section className="panel">
-        <PanelHeader title="Recent Deployments" />
+        <PanelHeader title="Recent deployments" />
         <table>
           <thead>
             <tr>
@@ -542,19 +578,30 @@ function Dashboard({
             </tr>
           </thead>
           <tbody>
-            {deployments.slice(0, 6).map((deployment) => (
-              <tr key={deployment.id}>
-                <td>{serviceById[deployment.service_id]?.name || "Unknown service"}</td>
-                <td>{deployment.version}</td>
-                <td>
-                  <code>{deployment.commit_sha}</code>
+            {deployments.length === 0 ? (
+              <tr>
+                <td className="table-empty" colSpan="5">
+                  <EmptyState
+                    title="No deployments"
+                    message="Deployment history will appear after the first release is registered."
+                  />
                 </td>
-                <td>
-                  <span className={statusClass(deployment.status)}>{deployment.status}</span>
-                </td>
-                <td>{formatDate(deployment.deployed_at)}</td>
               </tr>
-            ))}
+            ) : (
+              deployments.slice(0, 6).map((deployment) => (
+                <tr key={deployment.id}>
+                  <td>{serviceById[deployment.service_id]?.name || "Unknown service"}</td>
+                  <td>{deployment.version}</td>
+                  <td>
+                    <code>{deployment.commit_sha}</code>
+                  </td>
+                  <td>
+                    <span className={statusClass(deployment.status)}>{displayLabel(deployment.status)}</span>
+                  </td>
+                  <td>{formatDate(deployment.deployed_at)}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </section>
@@ -585,7 +632,7 @@ function Services({ busy, form, onChange, onSubmit, onStatusChange, services }) 
   return (
     <div className="stack">
       <section className="panel">
-        <PanelHeader title="Create Service" />
+        <PanelHeader title="Create service" />
         <form className="form-grid" onSubmit={onSubmit}>
           <Field label="Name">
             <input
@@ -654,7 +701,7 @@ function Services({ busy, form, onChange, onSubmit, onStatusChange, services }) 
       </section>
 
       <section className="panel">
-        <PanelHeader title="Service Catalog" />
+        <PanelHeader title="Service catalog" />
         <table>
           <thead>
             <tr>
@@ -667,28 +714,39 @@ function Services({ busy, form, onChange, onSubmit, onStatusChange, services }) 
             </tr>
           </thead>
           <tbody>
-            {services.map((service) => (
-              <tr key={service.id}>
-                <td>{service.name}</td>
-                <td>{service.owner}</td>
-                <td>{service.environment}</td>
-                <td>
-                  <select
-                    className="compact-select"
-                    disabled={busy === `service-status-${service.id}`}
-                    value={service.status}
-                    onChange={(event) => onStatusChange(service.id, event.target.value)}
-                  >
-                    <option>healthy</option>
-                    <option>degraded</option>
-                    <option>down</option>
-                    <option>maintenance</option>
-                  </select>
+            {services.length === 0 ? (
+              <tr>
+                <td className="table-empty" colSpan="6">
+                  <EmptyState
+                    title="No services yet"
+                    message="Add the first service above to populate the catalog."
+                  />
                 </td>
-                <td>{service.slo_target}%</td>
-                <td>{service.current_version}</td>
               </tr>
-            ))}
+            ) : (
+              services.map((service) => (
+                <tr key={service.id}>
+                  <td>{service.name}</td>
+                  <td>{service.owner}</td>
+                  <td>{service.environment}</td>
+                  <td>
+                    <select
+                      className="compact-select"
+                      disabled={busy === `service-status-${service.id}`}
+                      value={service.status}
+                      onChange={(event) => onStatusChange(service.id, event.target.value)}
+                    >
+                      <option>healthy</option>
+                      <option>degraded</option>
+                      <option>down</option>
+                      <option>maintenance</option>
+                    </select>
+                  </td>
+                  <td>{service.slo_target}%</td>
+                  <td>{service.current_version}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </section>
@@ -710,7 +768,7 @@ function Incidents({
   return (
     <div className="stack">
       <section className="panel">
-        <PanelHeader title="Create Incident" />
+        <PanelHeader title="Create incident" />
         <form className="form-grid" onSubmit={onSubmit}>
           <Field label="Service">
             <select
@@ -762,7 +820,7 @@ function Incidents({
       </section>
 
       <section className="panel">
-        <PanelHeader title="Incident Queue" />
+        <PanelHeader title="Incident queue" />
         <table>
           <thead>
             <tr>
@@ -776,32 +834,43 @@ function Incidents({
             </tr>
           </thead>
           <tbody>
-            {incidents.map((incident) => (
-              <tr key={incident.id}>
-                <td>{incident.title}</td>
-                <td>{serviceById[incident.service_id]?.name || "Unknown service"}</td>
-                <td>
-                  <span className={severityClass(incident.severity)}>{incident.severity}</span>
-                </td>
-                <td>
-                  <span className={statusClass(incident.status)}>{incident.status}</span>
-                </td>
-                <td>{formatDate(incident.started_at)}</td>
-                <td>{incident.mttr_minutes ? `${incident.mttr_minutes} min` : "Open"}</td>
-                <td>
-                  <button
-                    className="table-button"
-                    onClick={() => {
-                      setSelectedIncidentId(incident.id);
-                      setActiveView("incident-detail");
-                    }}
-                    type="button"
-                  >
-                    View
-                  </button>
+            {incidents.length === 0 ? (
+              <tr>
+                <td className="table-empty" colSpan="7">
+                  <EmptyState
+                    title="No incidents"
+                    message="Open incidents will appear here with severity, status, and MTTR."
+                  />
                 </td>
               </tr>
-            ))}
+            ) : (
+              incidents.map((incident) => (
+                <tr key={incident.id}>
+                  <td>{incident.title}</td>
+                  <td>{serviceById[incident.service_id]?.name || "Unknown service"}</td>
+                  <td>
+                    <span className={severityClass(incident.severity)}>{incident.severity}</span>
+                  </td>
+                  <td>
+                    <span className={statusClass(incident.status)}>{displayLabel(incident.status)}</span>
+                  </td>
+                  <td>{formatDate(incident.started_at)}</td>
+                  <td>{incident.mttr_minutes ? `${incident.mttr_minutes} min` : "Open"}</td>
+                  <td>
+                    <button
+                      className="table-button"
+                      onClick={() => {
+                        setSelectedIncidentId(incident.id);
+                        setActiveView("incident-detail");
+                      }}
+                      type="button"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </section>
@@ -824,7 +893,7 @@ function IncidentDetail({
   if (!detail) {
     return (
       <section className="panel">
-        <PanelHeader title="Incident Detail" />
+        <PanelHeader title="Incident detail" />
         <select value={selectedIncidentId || ""} onChange={(event) => onSelect(Number(event.target.value))}>
           <option value="">Select incident</option>
           {incidents.map((incident) => (
@@ -856,7 +925,7 @@ function IncidentDetail({
           </div>
           <div className="detail-badges">
             <span className={severityClass(detail.severity)}>{detail.severity}</span>
-            <span className={statusClass(detail.status)}>{detail.status}</span>
+            <span className={statusClass(detail.status)}>{displayLabel(detail.status)}</span>
           </div>
         </div>
         <div className="detail-stats">
@@ -878,18 +947,25 @@ function IncidentDetail({
         <section className="panel">
           <PanelHeader title="Timeline" />
           <div className="timeline">
-            {(detail.updates || []).map((update) => (
-              <article className="timeline-item" key={update.id}>
-                <span className={statusClass(update.status)}>{update.status}</span>
-                <p>{update.message}</p>
-                <small>{formatDate(update.created_at)}</small>
-              </article>
-            ))}
+            {(detail.updates || []).length === 0 ? (
+              <EmptyState
+                title="No timeline updates"
+                message="Add the first update to document the investigation."
+              />
+            ) : (
+              (detail.updates || []).map((update) => (
+                <article className="timeline-item" key={update.id}>
+                  <span className={statusClass(update.status)}>{displayLabel(update.status)}</span>
+                  <p>{update.message}</p>
+                  <small>{formatDate(update.created_at)}</small>
+                </article>
+              ))
+            )}
           </div>
         </section>
 
         <section className="panel">
-          <PanelHeader title="Add Update" />
+          <PanelHeader title="Add update" />
           <form className="form-stack" onSubmit={onSubmit}>
             <Field label="Status">
               <select
@@ -936,7 +1012,7 @@ function Deployments({ busy, deployments, form, onChange, onSubmit, serviceById,
   return (
     <div className="stack">
       <section className="panel">
-        <PanelHeader title="Register Deployment" />
+        <PanelHeader title="Register deployment" />
         <form className="form-grid" onSubmit={onSubmit}>
           <Field label="Service">
             <select
@@ -986,7 +1062,7 @@ function Deployments({ busy, deployments, form, onChange, onSubmit, serviceById,
       </section>
 
       <section className="panel">
-        <PanelHeader title="Deployment History" />
+        <PanelHeader title="Deployment history" />
         <table>
           <thead>
             <tr>
@@ -998,19 +1074,30 @@ function Deployments({ busy, deployments, form, onChange, onSubmit, serviceById,
             </tr>
           </thead>
           <tbody>
-            {deployments.map((deployment) => (
-              <tr key={deployment.id}>
-                <td>{serviceById[deployment.service_id]?.name || "Unknown service"}</td>
-                <td>{deployment.version}</td>
-                <td>
-                  <code>{deployment.commit_sha}</code>
+            {deployments.length === 0 ? (
+              <tr>
+                <td className="table-empty" colSpan="5">
+                  <EmptyState
+                    title="No deployments"
+                    message="Registered deployments will appear here with commit and outcome."
+                  />
                 </td>
-                <td>
-                  <span className={statusClass(deployment.status)}>{deployment.status}</span>
-                </td>
-                <td>{formatDate(deployment.deployed_at)}</td>
               </tr>
-            ))}
+            ) : (
+              deployments.map((deployment) => (
+                <tr key={deployment.id}>
+                  <td>{serviceById[deployment.service_id]?.name || "Unknown service"}</td>
+                  <td>{deployment.version}</td>
+                  <td>
+                    <code>{deployment.commit_sha}</code>
+                  </td>
+                  <td>
+                    <span className={statusClass(deployment.status)}>{displayLabel(deployment.status)}</span>
+                  </td>
+                  <td>{formatDate(deployment.deployed_at)}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </section>
@@ -1048,11 +1135,21 @@ function Metrics({ metrics, uptimePercent }) {
           label="MTTR"
           value={metrics?.average_mttr_minutes ? `${metrics.average_mttr_minutes} min` : "No data"}
         />
-        <MetricCard icon={GitBranch} label="Failed deploys" value={metrics?.failed_deployments ?? 0} />
-        <MetricCard icon={ShieldAlert} label="Open incidents" value={metrics?.open_incidents ?? 0} />
+        <MetricCard
+          icon={GitBranch}
+          label="Failed deploys"
+          tone={metrics?.failed_deployments ? "bad" : ""}
+          value={metrics?.failed_deployments ?? 0}
+        />
+        <MetricCard
+          icon={ShieldAlert}
+          label="Open incidents"
+          tone={metrics?.open_incidents ? "bad" : ""}
+          value={metrics?.open_incidents ?? 0}
+        />
       </section>
       <section className="panel">
-        <PanelHeader title="Open Incidents By Severity" />
+        <PanelHeader title="Open incidents by severity" />
         <div className="bar-list">
           {["P1", "P2", "P3", "P4"].map((severity) => (
             <div className="bar-row" key={severity}>
@@ -1069,7 +1166,7 @@ function Metrics({ metrics, uptimePercent }) {
         </div>
       </section>
       <section className="panel">
-        <PanelHeader title="SLO And Error Budget" />
+        <PanelHeader title="SLO and error budget" />
         <table>
           <thead>
             <tr>
@@ -1082,22 +1179,33 @@ function Metrics({ metrics, uptimePercent }) {
             </tr>
           </thead>
           <tbody>
-            {serviceReliability.map((service) => (
-              <tr key={service.service_id}>
-                <td>{service.name}</td>
-                <td>
-                  <span className={statusClass(service.status)}>{service.status}</span>
-                </td>
-                <td>{service.sli_uptime_percent}%</td>
-                <td>{service.slo_target}%</td>
-                <td>{service.error_budget_remaining_percent}%</td>
-                <td>
-                  <span className={statusClass(service.error_budget_status)}>
-                    {service.error_budget_status}
-                  </span>
+            {serviceReliability.length === 0 ? (
+              <tr>
+                <td className="table-empty" colSpan="6">
+                  <EmptyState
+                    title="No reliability data"
+                    message="Reliability rows will appear once services report SLI and error budget data."
+                  />
                 </td>
               </tr>
-            ))}
+            ) : (
+              serviceReliability.map((service) => (
+                <tr key={service.service_id}>
+                  <td>{service.name}</td>
+                  <td>
+                    <span className={statusClass(service.status)}>{displayLabel(service.status)}</span>
+                  </td>
+                  <td>{service.sli_uptime_percent}%</td>
+                  <td>{service.slo_target}%</td>
+                  <td>{service.error_budget_remaining_percent}%</td>
+                  <td>
+                    <span className={statusClass(service.error_budget_status)}>
+                      {displayLabel(service.error_budget_status)}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </section>
