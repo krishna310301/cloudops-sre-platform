@@ -512,7 +512,7 @@ function Dashboard({
                 <tr>
                   <td className="table-empty" colSpan="5">
                     <EmptyState
-                      title="No services yet"
+                      title="Waiting for the first service"
                       message="Create a service to begin tracking ownership, SLOs, and health."
                     />
                   </td>
@@ -539,8 +539,8 @@ function Dashboard({
           <div className="compact-list">
             {incidents.length === 0 ? (
               <EmptyState
-                title="No open incidents"
-                message="Incident activity will appear here when the platform needs attention."
+                title="No active incidents"
+                message="New investigations will appear here when a service needs attention."
               />
             ) : (
               incidents.slice(0, 5).map((incident) => (
@@ -582,8 +582,8 @@ function Dashboard({
               <tr>
                 <td className="table-empty" colSpan="5">
                   <EmptyState
-                    title="No deployments"
-                    message="Deployment history will appear after the first release is registered."
+                    title="Waiting for the first deployment"
+                    message="Register a release to track service version, commit, outcome, and time."
                   />
                 </td>
               </tr>
@@ -718,7 +718,7 @@ function Services({ busy, form, onChange, onSubmit, onStatusChange, services }) 
               <tr>
                 <td className="table-empty" colSpan="6">
                   <EmptyState
-                    title="No services yet"
+                    title="Waiting for the first service"
                     message="Add the first service above to populate the catalog."
                   />
                 </td>
@@ -838,8 +838,8 @@ function Incidents({
               <tr>
                 <td className="table-empty" colSpan="7">
                   <EmptyState
-                    title="No incidents"
-                    message="Open incidents will appear here with severity, status, and MTTR."
+                    title="No incidents in the queue"
+                    message="Open investigations will appear here with severity, status, and MTTR."
                   />
                 </td>
               </tr>
@@ -949,7 +949,7 @@ function IncidentDetail({
           <div className="timeline">
             {(detail.updates || []).length === 0 ? (
               <EmptyState
-                title="No timeline updates"
+                title="Waiting for the first update"
                 message="Add the first update to document the investigation."
               />
             ) : (
@@ -1078,7 +1078,7 @@ function Deployments({ busy, deployments, form, onChange, onSubmit, serviceById,
               <tr>
                 <td className="table-empty" colSpan="5">
                   <EmptyState
-                    title="No deployments"
+                    title="Waiting for the first deployment"
                     message="Registered deployments will appear here with commit and outcome."
                   />
                 </td>
@@ -1183,8 +1183,8 @@ function Metrics({ metrics, uptimePercent }) {
               <tr>
                 <td className="table-empty" colSpan="6">
                   <EmptyState
-                    title="No reliability data"
-                    message="Reliability rows will appear once services report SLI and error budget data."
+                    title="Waiting for reliability data"
+                    message="Rows appear once services report SLI and error budget values."
                   />
                 </td>
               </tr>
