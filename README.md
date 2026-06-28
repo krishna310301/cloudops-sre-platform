@@ -81,6 +81,8 @@ Key run results:
 
 Full gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots/aws-demo-2026-06-06/)
 
+Final results and closure notes: [docs/results.md](docs/results.md)
+
 ## Technical Scope
 
 ### Application
@@ -318,6 +320,7 @@ Cost control: [docs/cost-control.md](docs/cost-control.md)
 - [Architecture](docs/architecture.md)
 - [Deployment](docs/deployment.md)
 - [AWS Add-ons](docs/aws-addons.md)
+- [Project Results](docs/results.md)
 - [AWS Run Summary](docs/aws-demo-run.md)
 - [CI/CD](docs/ci-cd.md)
 - [HPA Demo](docs/hpa-demo.md)

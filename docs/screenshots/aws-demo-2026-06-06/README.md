@@ -23,6 +23,6 @@ This folder contains sanitized screenshots from the short-lived AWS demo deploym
 
 ## Notes
 
-- AWS resources were destroyed after evidence capture.
+- AWS resources were destroyed after screenshots and validation notes were captured.
 - Account IDs, secrets, and private database details were removed or sanitized.
 - Grafana was intentionally skipped for this demo pass to keep the AWS run short and cost-controlled.
