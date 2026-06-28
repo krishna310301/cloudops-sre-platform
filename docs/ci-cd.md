@@ -76,6 +76,30 @@ Gated jobs:
 - Run Kubernetes rollout checks
 - Print pods, services, ingress, and HPA status
 
+## Image Promotion
+
+Manual AWS deployments publish both application images with one explicit tag, then deploy that exact tag through Helm. If `image_tag` is not provided, the workflow uses the commit SHA. For a cleaner release-style promotion, pass a readable tag such as:
+
+```text
+v2026.06.27-1
+```
+
+The workflow validates the tag against Docker tag rules, pushes:
+
+```text
+<account>.dkr.ecr.<region>.amazonaws.com/cloudops-sre-platform/backend:<image_tag>
+<account>.dkr.ecr.<region>.amazonaws.com/cloudops-sre-platform/frontend:<image_tag>
+```
+
+and deploys with:
+
+```text
+backend.image.tag=<image_tag>
+frontend.image.tag=<image_tag>
+```
+
+Avoid using `latest` for AWS evidence runs. A stable tag makes screenshots, rollback notes, and incident timelines easier to explain.
+
 ## Required GitHub Secrets
 
 ```text
@@ -106,3 +130,19 @@ Before running the manual AWS deploy job:
 - Metrics Server is installed for HPA CPU metrics
 - The database secret contains a `database_url` key
 - You are ready to capture screenshots and destroy the environment the same day
+
+## Rollback
+
+The Helm deploy uses `--atomic`, so a failed upgrade rolls back automatically within the workflow timeout.
+
+For manual rollback after a bad deployment:
+
+```bash
+helm history cloudops -n cloudops
+helm rollback cloudops -n cloudops
+kubectl rollout status deployment/cloudops-cloudops-sre-platform-backend -n cloudops --timeout=180s
+kubectl rollout status deployment/cloudops-cloudops-sre-platform-frontend -n cloudops --timeout=180s
+kubectl get pods,svc,ingress,hpa -n cloudops -o wide
+```
+
+Record the previous image tag, failed image tag, rollback revision, and verification commands in the incident timeline.

@@ -127,6 +127,8 @@ Capture screenshots:
 
 The completed AWS demo used `kubectl`, Metrics Server, CloudWatch logs, and screenshots to document HPA behavior. Use this section only if the optional Prometheus/Grafana add-on is installed.
 
+Full install, dashboard, screenshot, and cleanup steps are in `docs/grafana-demo.md`.
+
 Open Grafana:
 
 ```bash

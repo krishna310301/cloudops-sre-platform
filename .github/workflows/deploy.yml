@@ -39,7 +39,7 @@ on:
         default: "cloudops-sre-platform-demo"
         type: string
       image_tag:
-        description: "Image tag to publish and deploy"
+        description: "Image tag to publish and deploy. Defaults to the commit SHA."
         required: false
         default: ""
         type: string
@@ -222,10 +222,15 @@ jobs:
         id: meta
         run: |
           if [ -n "${{ inputs.image_tag }}" ]; then
-            echo "image_tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+            IMAGE_TAG="${{ inputs.image_tag }}"
           else
-            echo "image_tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+            IMAGE_TAG="${GITHUB_SHA}"
           fi
+          if ! printf '%s' "${IMAGE_TAG}" | grep -Eq '^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$'; then
+            echo "Invalid image tag: ${IMAGE_TAG}" >&2
+            exit 1
+          fi
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -254,6 +259,15 @@ jobs:
 
           echo "backend_image=${BACKEND_IMAGE}" >> "$GITHUB_OUTPUT"
           echo "frontend_image=${FRONTEND_IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Published image summary
+        run: |
+          {
+            echo "### Published images"
+            echo "- Backend: \`${{ steps.images.outputs.backend_image }}\`"
+            echo "- Frontend: \`${{ steps.images.outputs.frontend_image }}\`"
+            echo "- Image tag: \`${{ steps.meta.outputs.image_tag }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   deploy-eks:
     name: Deploy To EKS With Helm
@@ -310,6 +324,9 @@ jobs:
 
           helm upgrade --install "${HELM_RELEASE}" "${CHART_PATH}" \
             --namespace "${K8S_NAMESPACE}" \
+            --atomic \
+            --timeout 5m0s \
+            --history-max 10 \
             -f "${CHART_PATH}/values-aws-example.yaml" \
             --set backend.image.repository="${ECR_REGISTRY}/${BACKEND_ECR_REPOSITORY}" \
             --set frontend.image.repository="${ECR_REGISTRY}/${FRONTEND_ECR_REPOSITORY}" \
@@ -324,3 +341,16 @@ jobs:
       - name: Kubernetes summary
         run: |
           kubectl get pods,svc,ingress,hpa -n "${K8S_NAMESPACE}" -o wide
+
+      - name: Deployment summary
+        env:
+          IMAGE_TAG: ${{ needs.publish-images.outputs.image_tag }}
+        run: |
+          {
+            echo "### Deployment"
+            echo "- Release: \`${HELM_RELEASE}\`"
+            echo "- Namespace: \`${K8S_NAMESPACE}\`"
+            echo "- Image tag: \`${IMAGE_TAG}\`"
+            echo "- Rollback command: \`helm rollback ${HELM_RELEASE} -n ${K8S_NAMESPACE}\`"
+            echo "- History command: \`helm history ${HELM_RELEASE} -n ${K8S_NAMESPACE}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

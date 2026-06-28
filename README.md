@@ -3,57 +3,35 @@
 [![CI CD](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/deploy.yml/badge.svg)](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/deploy.yml)
 [![Terraform Validate](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/terraform-validate.yml/badge.svg)](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/terraform-validate.yml)
 
-CloudOps SRE Platform is a cloud-native reliability operations dashboard built on Amazon EKS. It tracks service health, deployments, incidents, MTTR, and SLO-style reliability metrics for teams that need a clear view of operational health.
+CloudOps SRE Platform is a cloud-native reliability operations platform built on Amazon EKS. It brings service health, deployment history, incident timelines, MTTR, SLO tracking, and error budget views into one internal operations-style dashboard.
+
+The project is built with React, FastAPI, PostgreSQL, Docker, Helm, Terraform, GitHub Actions, Amazon EKS, Amazon RDS, ALB Ingress, Secrets Manager, CloudWatch, HPA, and k6.
 
 ## Why I Built This
 
-Before moving deeper into cloud infrastructure, I worked in production network operations where incidents were real, SLAs mattered, and every handoff needed enough context for the next engineer to keep troubleshooting without losing time. That experience shaped how I think about reliability: service health, deployment history, timelines, ownership, and recovery metrics should be visible in one place.
+Before moving deeper into cloud infrastructure, I worked in production network operations at Tata Communications. My day-to-day work involved SLA-driven troubleshooting, RCA, vendor/TAC coordination, field dispatch, operational handoffs, and high-severity incidents across carrier-grade networks.
 
-This project is my bridge from network operations to cloud operations. I built the kind of internal SRE console I would want during a live incident: one place to register services, track health, record deployment changes, manage incident timelines, and understand MTTR.
+That experience shaped how I think about cloud systems. Deploying infrastructure is only one part of the work. The harder question is what happens after something breaks:
 
-I also took it through a short AWS run on Amazon EKS using Kubernetes Deployments, Services, ALB Ingress, Helm, HPA autoscaling, ECR images, Amazon RDS PostgreSQL, Secrets Manager, CloudWatch logs, and Terraform-managed infrastructure. I destroyed the environment after capturing the run so the project stays cost-controlled.
+- Which services are unhealthy?
+- What changed recently?
+- Who owns the affected service?
+- What is still open?
+- How long did recovery take?
+- Are reliability targets being tracked?
+- Can the platform scale when traffic increases?
 
-AWS run notes and screenshots:
+CloudOps SRE Platform is the kind of internal tool I would have wanted during live operations: a single place to understand service health, deployments, incidents, timelines, and reliability signals without jumping between disconnected notes and consoles.
 
-- [AWS run summary](docs/aws-demo-run.md)
-- [Screenshot gallery](docs/screenshots/aws-demo-2026-06-06/README.md)
+## What The Platform Does
 
-## What This Covers
-
-- Production-style containerized app with React, FastAPI, PostgreSQL, Docker, and Nginx
-- Kubernetes packaging with Helm, probes, resource limits, HPA, services, and ALB ingress
-- AWS foundation with Terraform for VPC, EKS, ECR, RDS, IAM, Secrets Manager, and CloudWatch
-- CI/CD with GitHub Actions for tests, builds, image publishing, Terraform validation, and gated EKS deployment
-- SRE workflows for services, incidents, timelines, deployments, MTTR, HPA scale-out, CloudWatch logs, and observability runbooks
-- Optional Prometheus/Grafana add-on notes for deeper Kubernetes metrics beyond the completed CloudWatch/HPA demo
-- Same-day AWS run workflow: deploy, capture the run, and destroy before costs linger
-
-## Project Status
-
-Working project components:
-
-- FastAPI backend and React frontend
-- Alembic-versioned PostgreSQL schema and seeded data
-- Local Docker Compose stack
-- Production-style Nginx Docker stack
-- Backend API tests
-- Frontend production build
-- Terraform AWS foundation
-- Helm chart
-- GitHub Actions workflows
-- AWS add-on prep docs
-- HPA/k6 load-test notes and screenshots
-- Observability runbooks
-
-The short-lived AWS run followed this path:
-
-- `terraform apply`
-- ECR image push
-- EKS deployment
-- AWS screenshots
-- `terraform destroy`
-
-I only run the AWS workflow when I have time to capture screenshots and destroy the environment the same day.
+- Tracks services with owner, environment, health status, SLO target, service URL, and current version
+- Records deployments with service version, commit SHA, deployment status, and deployment time
+- Manages incidents with P1-P4 severity, investigation state, timeline updates, resolution, and MTTR
+- Shows reliability dashboard metrics for open incidents, failed deployments, average MTTR, service health, SLOs, and error budgets
+- Emits structured JSON backend logs with request correlation IDs for troubleshooting
+- Includes frontend loading, retry, and API failure states for operational views
+- Provides a bounded CPU endpoint for HPA validation under controlled k6 load
 
 ## Architecture
 
@@ -61,33 +39,86 @@ I only run the AWS workflow when I have time to capture screenshots and destroy 
 
 ```mermaid
 flowchart LR
-    operator["Cloud / SRE Operator"] --> alb["AWS ALB Ingress"]
-    alb --> frontend["React + Nginx frontend pods"]
+    user["Cloud / SRE Operator"] --> alb["Application Load Balancer"]
+    alb --> ingress["Kubernetes Ingress"]
+    ingress --> frontend["React + Nginx frontend pods"]
     frontend --> backend["FastAPI backend pods"]
     backend --> rds["Amazon RDS PostgreSQL"]
-    backend --> secret["Kubernetes Secret from AWS Secrets Manager"]
+    secrets["AWS Secrets Manager"] --> k8ssecret["Kubernetes Secret"]
+    k8ssecret --> backend
 
     gha["GitHub Actions"] --> ecr["Amazon ECR"]
     ecr --> eks["Amazon EKS"]
-    tf["Terraform"] --> aws["VPC / EKS / RDS / ECR / IAM / Secrets"]
-    eks --> cw["CloudWatch Logs"]
+    terraform["Terraform"] --> aws["VPC / EKS / ECR / RDS / IAM / Secrets / CloudWatch"]
     metrics["Metrics Server"] --> hpa["Backend HPA"]
     hpa --> backend
+    eks --> cw["CloudWatch Logs"]
 ```
 
 More detail: [docs/architecture.md](docs/architecture.md)
 
-## Application Features
+## AWS Run Results
 
-- Dashboard with service, incident, deployment, MTTR, and platform status metrics
-- Service catalog with owner, environment, SLO target, status, version, and URL
-- Incident workflow with severity, status, timeline updates, and resolution
-- Deployment history with version, commit SHA, status, and deployment time
-- Metrics endpoint for reliability dashboard summaries
-- Frontend loading, retry, and API failure states for operational views
-- SLO and error budget tracking in reliability metrics
-- Structured JSON backend logs with `X-Request-ID` request correlation
-- Bounded CPU demo endpoint for HPA testing: `/demo/cpu`
+The project was deployed to AWS as a short-lived run, then destroyed afterward for cost control. The run used Terraform-managed AWS infrastructure, ECR images, Helm deployment to EKS, RDS PostgreSQL, ALB Ingress, CloudWatch logs, Metrics Server, HPA, and k6.
+
+Key run results:
+
+- EKS cluster was active with two worker nodes
+- React and FastAPI workloads were deployed behind ALB Ingress
+- Backend used Secrets Manager-backed database credentials
+- HPA scaled backend replicas from 2 to 6 pods
+- k6 sustained 2,035 requests at a 99.5% success rate with 1.52s p95 latency
+- HPA observed 444% CPU against a 60% target during the scale-out window
+- Terraform destroy completed after the run to remove EKS, RDS, NAT Gateway, ALB, ECR, CloudWatch log groups, and related networking resources
+
+| Live dashboard | HPA scale-out |
+|---|---|
+| ![Live CloudOps dashboard on ALB](docs/screenshots/aws-demo-2026-06-06/01-live-dashboard-alb.png) | ![Backend HPA scale-out during k6 load](docs/screenshots/aws-demo-2026-06-06/10-hpa-during-load.png) |
+
+| EKS nodes | Destroy confirmation |
+|---|---|
+| ![EKS cluster and worker nodes](docs/screenshots/aws-demo-2026-06-06/07-eks-cluster-nodes.png) | ![Terraform destroy confirmation](docs/screenshots/aws-demo-2026-06-06/14-terraform-destroy-confirmation.png) |
+
+Full gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots/aws-demo-2026-06-06/)
+
+## Technical Scope
+
+### Application
+
+- React frontend with Vite and production Nginx image
+- FastAPI backend with SQLAlchemy, Pydantic, Alembic migrations, and PostgreSQL
+- Seeded data for services, incidents, incident timelines, deployments, and health checks
+- REST API for service catalog, incident workflows, deployment history, reliability metrics, and health checks
+
+### Kubernetes
+
+- Helm chart for frontend and backend workloads
+- Kubernetes Deployments, Services, ConfigMaps, Secrets, Ingress, and HPA
+- Liveness and readiness probes
+- Resource requests and limits
+- ALB Ingress for external traffic
+- Metrics Server-backed HPA validation
+
+### AWS
+
+- VPC, public/private/database subnets, route tables, Internet Gateway, and NAT Gateway
+- Amazon EKS managed node group
+- Amazon ECR repositories for frontend and backend images
+- Amazon RDS PostgreSQL in private database subnets
+- IAM roles, OIDC provider, and AWS Load Balancer Controller IRSA role
+- AWS Secrets Manager database secret
+- CloudWatch log groups and RDS CPU alarm
+
+### CI/CD And Validation
+
+- Backend tests
+- Frontend production build
+- Docker image builds
+- Helm lint and Kubernetes manifest validation
+- Terraform format and validate
+- Terraform cost/security guardrail script
+- Checkov Terraform scan
+- Manual AWS deployment gate for ECR push and EKS rollout
 
 ## Repository Structure
 
@@ -98,9 +129,9 @@ More detail: [docs/architecture.md](docs/architecture.md)
 ├── infra/                   # Terraform AWS foundation
 ├── charts/                  # Helm chart for EKS deployment
 ├── load-tests/              # k6 HPA load test
-├── docs/                    # Architecture, deployment, runbooks, demo notes
+├── docs/                    # Architecture, deployment, runbooks, run notes
 ├── .github/workflows/       # CI/CD and Terraform validation
-├── docker-compose.yml       # Local dev stack
+├── docker-compose.yml       # Local development stack
 └── docker-compose.prod.yml  # Production-style local stack
 ```
 
@@ -110,33 +141,24 @@ Prerequisite:
 
 - Docker Desktop running
 
-Start the dev stack:
+Start the local stack:
 
 ```bash
 docker compose up -d --build
 docker compose ps
 ```
 
-The backend container runs `alembic upgrade head` before starting Uvicorn.
-
-Expected:
+Expected local endpoints:
 
 - PostgreSQL: `localhost:5432`
 - FastAPI: `http://localhost:8000`
 - React/Vite: `http://localhost:5173`
 
-Verify:
+Verify the backend:
 
 ```bash
 curl http://localhost:8000/health
 curl http://localhost:8000/metrics
-```
-
-Run migrations manually when developing outside Docker:
-
-```bash
-cd backend
-alembic upgrade head
 ```
 
 Run tests and frontend build:
@@ -153,9 +175,16 @@ Expected:
 ✓ built
 ```
 
+Run migrations manually when developing outside Docker:
+
+```bash
+cd backend
+alembic upgrade head
+```
+
 ## Production-Style Local Docker
 
-This stack validates the pattern used later for EKS: React builds into static assets, Nginx serves the frontend, and `/api/*` proxies to FastAPI.
+This stack mirrors the container pattern used for EKS: React builds into static assets, Nginx serves the frontend, and `/api/*` proxies to FastAPI.
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
@@ -168,7 +197,7 @@ Open:
 http://localhost:8080
 ```
 
-Verify Nginx API proxy:
+Verify the Nginx API proxy:
 
 ```bash
 docker compose -f docker-compose.prod.yml exec frontend wget -qO- http://127.0.0.1/api/health
@@ -177,10 +206,10 @@ docker compose -f docker-compose.prod.yml exec frontend wget -qO- 'http://127.0.
 
 ## Terraform Validation
 
-Terraform defines:
+Terraform defines the AWS foundation for short-lived EKS runs:
 
-- VPC, subnets, Internet Gateway, NAT Gateway, route tables
-- EKS cluster, managed node group, core add-ons, OIDC provider
+- VPC and subnets
+- EKS cluster and managed node group
 - ECR repositories
 - RDS PostgreSQL
 - Secrets Manager database secret
@@ -188,7 +217,7 @@ Terraform defines:
 - AWS Load Balancer Controller IRSA role
 - CloudWatch log groups and alarm
 
-Validate only:
+Validate without deploying:
 
 ```bash
 terraform -chdir=infra init -backend=false
@@ -206,10 +235,10 @@ Do not run `terraform apply` until the deploy-day checklist is complete.
 
 Terraform state modes:
 
-- Short-lived single-operator demo: local state, with `*.tfstate` ignored by git
+- Short-lived single-operator run: local state, with `*.tfstate` ignored by git
 - Team-style repeatable deployment: optional S3 backend using [infra/backend.tf.example](infra/backend.tf.example)
 
-Remote state setup notes are documented in [docs/terraform-state.md](docs/terraform-state.md).
+Remote state notes: [docs/terraform-state.md](docs/terraform-state.md)
 
 ## Helm Validation
 
@@ -236,39 +265,9 @@ Expected:
 1 chart(s) linted, 0 chart(s) failed
 ```
 
-## CI/CD
-
-Workflows:
-
-- [.github/workflows/terraform-validate.yml](.github/workflows/terraform-validate.yml)
-- [.github/workflows/deploy.yml](.github/workflows/deploy.yml)
-
-Default CI checks:
-
-- Backend tests
-- Frontend production build
-- Docker image builds
-- Helm lint, render, and Kubernetes schema validation
-- Terraform validate, cost guardrails, and Checkov Terraform scan
-
-AWS deployment is manual only and requires:
-
-```text
-deploy_to_aws = true
-```
-
-Required future GitHub secrets:
-
-```text
-AWS_ROLE_TO_ASSUME
-AWS_DATABASE_SECRET_NAME
-```
-
-More detail: [docs/ci-cd.md](docs/ci-cd.md)
-
 ## HPA Load Test
 
-Smoke-test the local load path:
+Smoke-test the CPU demo path locally:
 
 ```bash
 docker run --rm \
@@ -286,11 +285,11 @@ Expected:
 checks: 100%
 ```
 
-Full AWS HPA runbook: [docs/hpa-demo.md](docs/hpa-demo.md)
+Full HPA runbook: [docs/hpa-demo.md](docs/hpa-demo.md)
 
-## AWS Run and Cleanup
+## AWS Run And Cleanup
 
-This project is designed for short-lived AWS validation runs. To control cost, deploy only when ready to capture screenshots and notes, then destroy the environment the same day.
+This project is intentionally designed for short-lived AWS runs. The expensive resources are not meant to stay online overnight.
 
 Cost-bearing resources include:
 
@@ -300,28 +299,22 @@ Cost-bearing resources include:
 - Application Load Balancer
 - CloudWatch log ingestion
 
-Before deploying, validate locally, confirm the AWS account and region, review `terraform plan`, and check cost-bearing resources before running `terraform apply`.
+Before deploying:
 
-The project was deployed to Amazon EKS for a short-lived run. The screenshots below capture the live ALB endpoint, HPA scale-out under k6 load, EKS nodes, and same-day Terraform destroy.
+1. Run local validation.
+2. Confirm AWS account and region.
+3. Review `terraform plan`.
+4. Apply only when ready to capture run notes and screenshots.
+5. Destroy the same day.
 
-| Live dashboard | HPA scale-out |
-|---|---|
-| ![Live CloudOps dashboard on ALB](docs/screenshots/aws-demo-2026-06-06/01-live-dashboard-alb.png) | ![Backend HPA scale-out during k6 load](docs/screenshots/aws-demo-2026-06-06/10-hpa-during-load.png) |
+Run checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)
 
-| EKS nodes | Destroy confirmation |
-|---|---|
-| ![EKS cluster and worker nodes](docs/screenshots/aws-demo-2026-06-06/07-eks-cluster-nodes.png) | ![Terraform destroy confirmation](docs/screenshots/aws-demo-2026-06-06/14-terraform-destroy-confirmation.png) |
+Run summary: [docs/aws-demo-run.md](docs/aws-demo-run.md)
 
-- Run checklist: [docs/aws-demo-checklist.md](docs/aws-demo-checklist.md)
-- Run summary: [docs/aws-demo-run.md](docs/aws-demo-run.md)
-- Validation checklist: [docs/demo-validation-checklist.md](docs/demo-validation-checklist.md)
-- RDS connectivity and secret rotation runbook: [docs/rds-connectivity-secret-rotation-runbook.md](docs/rds-connectivity-secret-rotation-runbook.md)
-- Cost control guide: [docs/cost-control.md](docs/cost-control.md)
-- Full screenshot gallery: [docs/screenshots/aws-demo-2026-06-06](docs/screenshots/aws-demo-2026-06-06/)
+Cost control: [docs/cost-control.md](docs/cost-control.md)
 
 ## Documentation
 
-- [Changelog](docs/changelog.md)
 - [Architecture](docs/architecture.md)
 - [Deployment](docs/deployment.md)
 - [AWS Add-ons](docs/aws-addons.md)
@@ -331,6 +324,18 @@ The project was deployed to Amazon EKS for a short-lived run. The screenshots be
 - [Observability](docs/observability.md)
 - [Runbook](docs/runbook.md)
 - [RDS Connectivity And Secret Rotation](docs/rds-connectivity-secret-rotation-runbook.md)
+- [External Secrets Sync](docs/external-secrets.md)
+- [Optional Grafana Demo](docs/grafana-demo.md)
 - [Cost Control](docs/cost-control.md)
 - [Validation Checklist](docs/demo-validation-checklist.md)
-- [Project Summary](docs/project-summary.md)
+- [Changelog](docs/changelog.md)
+
+## Follow-Up Paths
+
+The main platform is complete enough to run locally, validate through CI, deploy to EKS, test HPA behavior, inspect logs, and destroy the AWS environment safely.
+
+Optional production-style extensions are documented:
+
+- External Secrets Operator sync for the database URL
+- Explicit image promotion and Helm rollback workflow
+- Prometheus/Grafana run with kube-prometheus-stack screenshots

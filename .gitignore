@@ -16,6 +16,7 @@ build/
 
 *.log
 crash.log
+*.zip
 
 .terraform/
 *.tfstate
@@ -31,6 +32,12 @@ coverage/
 
 # Local sibling projects kept outside this repository's scope.
 aws-incident-triage-pipeline/
+cloudops-gitops-platform/
 cloudops-uptime-monitor/
 github-profile-readme/
+portfolio/
 resume/
+
+# Local generated artifacts from notes, PDFs, and scratch validation.
+output/
+tmp/

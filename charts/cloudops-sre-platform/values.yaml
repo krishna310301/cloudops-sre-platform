@@ -31,6 +31,16 @@ backend:
     secretKey: "database_url"
     createSecret: false
     databaseUrl: ""
+    externalSecret:
+      enabled: false
+      apiVersion: "external-secrets.io/v1"
+      refreshInterval: "1h"
+      secretStoreRef:
+        name: "aws-secretsmanager"
+        kind: "ClusterSecretStore"
+      remoteSecretName: ""
+      remoteProperty: "database_url"
+      targetCreationPolicy: "Owner"
 
   migrations:
     enabled: true

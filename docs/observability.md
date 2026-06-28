@@ -107,7 +107,7 @@ The completed AWS demo captured CloudWatch logs, Kubernetes status, and HPA scal
 Install commands are in:
 
 ```text
-docs/aws-addons.md
+docs/grafana-demo.md
 ```
 
 Verify monitoring pods:

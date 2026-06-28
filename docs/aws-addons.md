@@ -164,7 +164,7 @@ Expected:
 
 ## 5. Optional Prometheus And Grafana
 
-The completed AWS demo did not install Grafana in order to keep the run short and cost-controlled. Use this section if you want an expanded observability demo with Prometheus and Grafana dashboards.
+The completed AWS demo did not install Grafana in order to keep the run short and cost-controlled. Use this section if you want an expanded observability demo with Prometheus and Grafana dashboards. The complete screenshot checklist is in `docs/grafana-demo.md`.
 
 Install kube-prometheus-stack in a dedicated namespace:
 
@@ -253,6 +253,7 @@ Optional if kube-prometheus-stack is installed:
 
 - `kubectl get pods -n monitoring`
 - Grafana dashboard showing pod CPU/memory
+- Grafana HPA current and desired replica panels
 
 ## 8. Cleanup Reminder
 

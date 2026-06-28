@@ -34,6 +34,12 @@ For EKS/RDS deployments, the Helm chart creates a pre-install/pre-upgrade migrat
 
 The AWS deployment flow syncs the database URL from Secrets Manager into the Kubernetes Secret before `helm upgrade --install`, which keeps the migration Job on the same credential path as the application.
 
+For a production-style secret sync path, the chart can render an optional External Secrets Operator resource. That path keeps the backend reading the same Kubernetes Secret while moving the AWS Secrets Manager sync out of the deployment workflow. See:
+
+```text
+docs/external-secrets.md
+```
+
 ## Terraform Validation Only
 
 Run these commands from the repository root:
@@ -90,6 +96,12 @@ docs/ci-cd.md
 ```
 
 Automatic validation does not deploy to AWS. ECR push and EKS deployment require a manual workflow dispatch with `deploy_to_aws=true`.
+
+Manual deployment uses an explicit image tag for both backend and frontend images. If no tag is provided, the commit SHA is used. Release promotion and rollback notes are documented in:
+
+```text
+docs/ci-cd.md
+```
 
 ## EKS Add-Ons
 
