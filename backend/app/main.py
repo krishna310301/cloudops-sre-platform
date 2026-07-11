@@ -163,6 +163,9 @@ def cpu_load_demo(
     duration_ms: int = Query(default=250, ge=10, le=2000),
 ) -> dict[str, int | str]:
     """Bounded CPU work used only to demonstrate Kubernetes HPA scale-out."""
+    if not settings.demo_mode:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+
     started = perf_counter()
     deadline = started + (duration_ms / 1000)
     checksum = 0

@@ -14,8 +14,11 @@ if test_db.exists():
 os.environ["APP_ENV"] = "test"
 os.environ["DATABASE_URL"] = f"sqlite+pysqlite:///{test_db}"
 os.environ["CORS_ORIGINS"] = "http://testserver"
+os.environ["DEMO_MODE"] = "false"
 
-from app.main import app  # noqa: E402
+from app import main as main_module  # noqa: E402
+
+app = main_module.app
 
 
 def test_request_id_header_is_generated_when_missing():
@@ -145,15 +148,25 @@ def test_health_and_seeded_metrics():
         assert checkout_reliability["error_budget_status"] == "exhausted"
 
 
-def test_bounded_cpu_demo_endpoint():
+def test_bounded_cpu_demo_endpoint_is_disabled_by_default():
     with TestClient(app) as client:
         response = client.get("/demo/cpu?duration_ms=10")
+    assert response.status_code == 404
+
+
+def test_bounded_cpu_demo_endpoint_when_explicitly_enabled():
+    original = main_module.settings.demo_mode
+    main_module.settings.demo_mode = True
+    try:
+        with TestClient(app) as client:
+            response = client.get("/demo/cpu?duration_ms=10")
         assert response.status_code == 200
         payload = response.json()
-        assert payload["status"] == "ok"
         assert payload["purpose"] == "hpa-demo"
         assert payload["requested_ms"] == 10
         assert payload["iterations"] > 0
+    finally:
+        main_module.settings.demo_mode = original
 
 
 def test_service_create_and_status_update():

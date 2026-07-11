@@ -57,6 +57,11 @@ spec:
                 configMapKeyRef:
                   name: {{ include "cloudops-sre-platform.fullname" . }}-backend-config
                   key: LOG_FORMAT
+            - name: DEMO_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "cloudops-sre-platform.fullname" . }}-backend-config
+                  key: DEMO_MODE
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

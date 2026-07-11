@@ -58,7 +58,7 @@ missing required fields before a manual AWS deployment.
 
 The Terraform jobs run a repository cost/security guardrail script that fails
 when demo resource sizes, retention, cleanup, or RDS exposure assumptions drift.
-They also run Checkov against `infra/` as an advisory Terraform security scan.
+They also run Checkov against `infra/` as an advisory Terraform security scan. It reports production-hardening gaps without blocking the intentionally disposable validation environment.
 
 ## Manual AWS Deployment Gate
 

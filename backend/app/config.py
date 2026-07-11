@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     )
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     log_format: str = Field(default="json", alias="LOG_FORMAT")
+    demo_mode: bool = Field(default=False, alias="DEMO_MODE")
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -12,6 +12,7 @@ backend:
     corsOrigins: "https://REPLACE_WITH_ALB_DNS_NAME"
     logLevel: "INFO"
     logFormat: "json"
+    demoMode: false
 
   database:
     existingSecret: "cloudops-database"

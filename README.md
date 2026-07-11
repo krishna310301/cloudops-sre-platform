@@ -3,7 +3,7 @@
 [![CI CD](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/deploy.yml/badge.svg)](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/deploy.yml)
 [![Terraform Validate](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/terraform-validate.yml/badge.svg)](https://github.com/krishna310301/cloudops-sre-platform/actions/workflows/terraform-validate.yml)
 
-CloudOps SRE Platform is an EKS SRE operations platform for service health, deployment history, incident timelines, MTTR, SLO tracking, and error budget views.
+CloudOps SRE Platform is an EKS SRE operations platform for service health, deployment history, incident timelines, MTTR, and SLO-style error budget views.
 
 The project is built with React, FastAPI, PostgreSQL, Docker, Helm, Terraform, GitHub Actions, Amazon EKS, Amazon RDS, ALB Ingress, Secrets Manager, CloudWatch, HPA, and k6.
 
@@ -112,6 +112,8 @@ Final results and closure notes: [docs/results.md](docs/results.md)
 - CloudWatch log groups and RDS CPU alarm
 
 ### CI/CD And Validation
+
+Repository rules should require a pull request and both CI workflows before merging to `main`, and should block force pushes. These GitHub settings are external to the repository; until enabled, CI validation is not an enforced merge gate.
 
 - Backend tests
 - Frontend production build
@@ -268,6 +270,8 @@ Expected:
 ```
 
 ## HPA Load Test
+
+The `/api/demo/cpu` endpoint is disabled by default. For local Compose validation, start the stack with `DEMO_MODE=true docker compose up`; for EKS, enable `backend.env.demoMode=true` only for the controlled exercise described in [docs/hpa-demo.md](docs/hpa-demo.md).
 
 Smoke-test the CPU demo path locally:
 

@@ -24,6 +24,7 @@ backend:
     corsOrigins: "https://cloudops.example.com"
     logLevel: "INFO"
     logFormat: "json"
+    demoMode: false
 
   database:
     # For AWS, create this Kubernetes secret from AWS Secrets Manager or enable an external secret workflow.

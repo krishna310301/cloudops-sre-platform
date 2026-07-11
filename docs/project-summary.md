@@ -6,12 +6,12 @@ CloudOps SRE Platform | EKS, Helm, ECR, RDS, Terraform, FastAPI, React
 
 ## One-Line Description
 
-CloudOps SRE Platform is a cloud-native reliability operations dashboard built on Amazon EKS to track service health, deployments, incidents, MTTR, and SLO-style reliability metrics while demonstrating production-style Kubernetes deployment, CI/CD, autoscaling, observability, and infrastructure as code.
+CloudOps SRE Platform is a cloud-native reliability operations dashboard validated on Amazon EKS to track service health, deployments, incidents, MTTR, and SLO-style reliability views while demonstrating Kubernetes deployment, CI/CD, autoscaling, observability, and infrastructure as code.
 
 ## Resume Bullets
 
 - Built CloudOps SRE Platform, a cloud-native reliability operations dashboard on Amazon EKS using React, FastAPI, PostgreSQL/RDS, Docker, ECR, Helm, ALB Ingress, Terraform, and GitHub Actions.
-- Implemented service catalog, deployment tracking, P1-P4 incident workflows, incident timelines, MTTR metrics, health status dashboards, and SLO-style reliability views for production operations use cases.
+- Implemented service catalog, deployment tracking, P1-P4 incident workflows, incident timelines, MTTR metrics, health status dashboards, and simplified SLO-style reliability views.
 - Configured Kubernetes deployments, services, ingress, liveness/readiness probes, Secrets Manager integration, CloudWatch logging, HPA autoscaling, and runbooks for failed deployments, service degradation, and optional Grafana observability.
 
 ## Interview Talking Points

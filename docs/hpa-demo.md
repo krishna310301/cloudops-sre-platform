@@ -34,6 +34,15 @@ kubectl get pods -n cloudops -o wide
 
 ## 2. Find The ALB URL
 
+Enable the bounded CPU endpoint only for the controlled HPA exercise:
+
+```bash
+helm upgrade cloudops charts/cloudops-sre-platform \
+  --namespace cloudops \
+  --reuse-values \
+  --set backend.env.demoMode=true
+```
+
 ```bash
 ALB_URL="http://$(kubectl get ingress -n cloudops cloudops-cloudops-sre-platform -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
 echo "$ALB_URL"
@@ -193,3 +202,12 @@ kubectl get pods -n cloudops
 - Optional Grafana CPU graph
 - Optional Grafana HPA/current replicas graph
 - Scale-in after load stops
+
+After validation is complete, disable the CPU endpoint again:
+
+```bash
+helm upgrade cloudops charts/cloudops-sre-platform \
+  --namespace cloudops \
+  --reuse-values \
+  --set backend.env.demoMode=false
+```
